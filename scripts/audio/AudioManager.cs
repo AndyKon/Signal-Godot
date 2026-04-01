@@ -18,7 +18,7 @@ public partial class AudioManager : Node
         GameLog.ManagerReady("AudioManager");
 
         _musicPlayer = new AudioStreamPlayer();
-        _musicPlayer.Bus = "Music";
+        _musicPlayer.Bus = "Master";
         AddChild(_musicPlayer);
 
         _ambiencePlayer = new AudioStreamPlayer();

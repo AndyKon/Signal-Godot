@@ -148,14 +148,10 @@ public partial class NarrativeManager : CanvasLayer
             return;
         }
 
-        bool clicked = Input.IsActionJustPressed("ui_accept") || Input.IsActionJustPressed("click");
-
-        // Also check raw mouse button release (just released = one clean click)
-        if (!clicked && Input.IsMouseButtonPressed(MouseButton.Left) == false && _wasMouseDown)
-        {
-            clicked = true;
-        }
-        _wasMouseDown = Input.IsMouseButtonPressed(MouseButton.Left);
+        // Detect mouse release (click completed)
+        bool mouseDown = Input.IsMouseButtonPressed(MouseButton.Left);
+        bool clicked = Input.IsActionJustPressed("ui_accept") || (!mouseDown && _wasMouseDown);
+        _wasMouseDown = mouseDown;
 
         if (clicked)
         {

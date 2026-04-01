@@ -6,11 +6,19 @@ namespace Signal.UI;
 
 public partial class MainMenu : Control
 {
+    private SaveSlotUI _saveSlotUI;
+
     public override void _Ready()
     {
         GetNode<Button>("VBox/NewGameButton").Pressed += OnNewGame;
         GetNode<Button>("VBox/LoadGameButton").Pressed += OnLoadGame;
         GetNode<Button>("VBox/QuitButton").Pressed += OnQuit;
+
+        // Find SaveSlotUI from autoload
+        var managers = GetTree().Root.GetNodeOrNull("Managers");
+        if (managers != null)
+            _saveSlotUI = managers.GetNodeOrNull<SaveSlotUI>("SaveSlotUI");
+
         GameLog.Event("UI", "MainMenu ready");
     }
 
@@ -33,10 +41,16 @@ public partial class MainMenu : Control
 
     private void OnLoadGame()
     {
-        if (GameManager.Instance?.LoadFromSlot(1) == true)
+        if (_saveSlotUI != null)
         {
-            string scene = GameManager.Instance.State.CurrentScene;
-            SceneLoader.Instance?.LoadScene(scene);
+            _saveSlotUI.Show(slot =>
+            {
+                if (GameManager.Instance?.LoadFromSlot(slot) == true)
+                {
+                    string scene = GameManager.Instance.State.CurrentScene;
+                    SceneLoader.Instance?.LoadScene(scene);
+                }
+            }, showEmpty: false);
         }
     }
 

@@ -6,4 +6,6 @@
 script = ExtResource("1")
 EntryId = "hub_reboot_01"
 Text = "Systems initializing... ARIA unit 7 online. Directive received: Restore station power. Proceed to main corridor."
+AltConditionFlag = "found_hub_log_01"
+AltText = "Systems initializing... ARIA unit 7 online. Directive received: Restore station power. Proceed to main corridor.\n\n...wait. That maintenance log. The dates don't add up. Something happened here."
 FlagToSet = ""

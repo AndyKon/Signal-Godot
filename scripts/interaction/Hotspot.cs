@@ -17,6 +17,8 @@ public partial class Hotspot : Area2D
     public override void _Ready()
     {
         InputEvent += OnInput;
+        MouseEntered += OnMouseEntered;
+        MouseExited += OnMouseExited;
 
         // Create highlight visual
         _highlight = new ColorRect();
@@ -72,6 +74,21 @@ public partial class Hotspot : Area2D
         {
             EmitSignal(SignalName.Clicked, this);
         }
+    }
+
+    private void OnMouseEntered()
+    {
+        if (IsAvailable())
+        {
+            SetHighlight(true);
+            CursorManager.Instance?.SetInteract();
+        }
+    }
+
+    private void OnMouseExited()
+    {
+        SetHighlight(false);
+        CursorManager.Instance?.SetDefault();
     }
 
     public override void _Process(double delta)

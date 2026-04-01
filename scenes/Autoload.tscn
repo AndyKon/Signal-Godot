@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/core/GameManager.cs" id="1"]
 [ext_resource type="Script" path="res://scripts/interaction/InteractionManager.cs" id="2"]
@@ -7,6 +7,10 @@
 [ext_resource type="Script" path="res://scripts/narrative/NarrativeManager.cs" id="5"]
 [ext_resource type="Script" path="res://scripts/audio/AudioManager.cs" id="6"]
 [ext_resource type="Script" path="res://scripts/ui/PauseMenu.cs" id="7"]
+[ext_resource type="Script" path="res://scripts/ui/InventoryUI.cs" id="8"]
+[ext_resource type="Script" path="res://scripts/interaction/CursorManager.cs" id="9"]
+[ext_resource type="Script" path="res://scripts/ui/SaveSlotUI.cs" id="10"]
+[ext_resource type="Script" path="res://scripts/tests/AutotestBootstrap.cs" id="11"]
 
 [node name="Autoload" type="Node"]
 
@@ -28,5 +32,17 @@ script = ExtResource("5")
 [node name="AudioManager" type="Node" parent="."]
 script = ExtResource("6")
 
+[node name="CursorManager" type="Node" parent="."]
+script = ExtResource("9")
+
 [node name="PauseMenu" type="CanvasLayer" parent="."]
 script = ExtResource("7")
+
+[node name="InventoryUI" type="CanvasLayer" parent="."]
+script = ExtResource("8")
+
+[node name="SaveSlotUI" type="CanvasLayer" parent="."]
+script = ExtResource("10")
+
+[node name="AutotestBootstrap" type="Node" parent="."]
+script = ExtResource("11")
