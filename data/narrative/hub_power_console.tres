@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="NarrativeEntry" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/narrative/NarrativeEntry.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+EntryId = "hub_power_console"
+Text = "Hub power restored. Life support systems coming online. Section 2 access unlocked.\n\nSomething hums in the walls. It sounds almost... familiar."
+FlagToSet = "hub_power_restored"

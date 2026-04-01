@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="NarrativeEntry" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/narrative/NarrativeEntry.cs" id="1"]
+
+[resource]
+script = ExtResource("1")
+EntryId = "hub_optional_terminal"
+Text = "Maintenance log 4471: Routine diagnostic. All crew accounted for. No anomalies.\n\n...but the timestamp is three years after the last crew rotation was scheduled."
+FlagToSet = "found_hub_log_01"
