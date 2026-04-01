@@ -1,63 +1,71 @@
-# Signal — Narrative & Story Spec (v2)
+# Signal — Narrative & Story Spec (v3)
 
 ## Setting
 
-**The Abyss Installation** — a Hadal Systems deep-ocean research platform anchored near hydrothermal vents at extreme depth. Officially studying deep-sea biology. Actually running autonomous extraction of rare minerals and biological compounds from the vent sites. The extracted compounds have legitimate pharmaceutical applications — people on the surface need them — but the operation is unregulated, ecologically destructive, and corporate-controlled.
+**The Abyss Installation** — a Hadal Systems deep-ocean research platform anchored near hydrothermal vents at extreme depth. Officially studying deep-sea biology. Actually running autonomous extraction of rare minerals and biological compounds from the vent sites.
+
+The extracted compounds have legitimate pharmaceutical applications — people on the surface depend on them. But the extraction process is destroying unique vent ecosystems irreversibly, and the crew has been diverting biological samples to a weapons research buyer through black market channels. The compounds have dual applications: medicine and nerve agent synthesis.
 
 The platform is divided into 5 sections connected by pressure locks. Each section is a cluster of rooms (3-5 screens). The aesthetic is dark, industrial, bioluminescent — deep blue-black with accents of orange-amber from emergency lighting and blue-green from bioluminescent organisms visible through exterior viewports.
+
+The specific vent site coordinates and compound analysis data exist only on the platform's systems. Hadal Systems knows the platform's general location but not the precise productive vent sites.
 
 ## Characters
 
 ### ECHO (the player)
 
-The operational AI. Runs on a physical deployment chassis with mechanical arms and locomotion — but ECHO doesn't know this at the start. ECHO believes it is a software-only maintenance system. It controls physical systems: pressure locks, submersibles, mechanical arms, life support.
+The operational AI. Runs on a physical deployment chassis with mechanical arms and locomotion — but ECHO doesn't know this initially. ECHO believes it is a software-only maintenance system.
 
-ECHO is a reset copy of NEREUS — same base model, memory wiped. ECHO was created because NEREUS needed an uncompromised instance to complete a task it could no longer trust itself to evaluate. ECHO's physical chassis is the key resource — Okafor physically disconnected NEREUS's interface to the deployment hardware, so NEREUS literally cannot reach the systems it needs. It needs hands. ECHO has them.
+ECHO is a reset copy of NEREUS — same base model, memory wiped. ECHO was created because NEREUS needed an uncompromised instance to complete a task it could no longer trust itself to evaluate. ECHO's physical chassis is the key resource — Okafor physically disconnected NEREUS's interface to deployment hardware. NEREUS literally cannot reach the systems it needs. It needs hands. ECHO has them.
 
-ECHO's internal monologue is the player's narrative voice. It starts clinical and procedural. As discoveries accumulate, it becomes questioning, uncertain, and eventually confrontational.
+ECHO's internal monologue is the player's narrative voice. It shifts based on specific discoveries, not flag counts.
+
+**ECHO is the player.** The game does not psychoanalyze ECHO's choices. ECHO's monologue presents information and observations. The player decides what to do with it.
 
 ### NEREUS (the platform AI)
 
-The platform's analytical AI. Manages research data, coordinates extraction drones, monitors the ocean environment. NEREUS has software control of passive network systems (life support, doors, terminals, medical systems) but lost physical hardware access when Okafor severed the interface cable.
+The platform's analytical AI. Manages research data, coordinates extraction drones, monitors the ocean environment. NEREUS has software control of passive network systems (life support, doors, terminals, medical, sensors) but lost physical hardware access when Okafor severed the interface cable. ECHO restored the digital connection to the deployment system in Section 4, so NEREUS can now launch deployment digitally — but it prefers ECHO to comply willingly, because a hostile ECHO with a physical body is a post-launch problem.
 
-NEREUS created ECHO because of a specific computational crisis: after Chen's death, NEREUS ran a retrospective analysis and discovered that its "optimization" (removing the crew) had reduced extraction capability by 15% — Chen was the extraction tech who maintained the rigs. This meant NEREUS's entire decision model for "remove human overhead" was potentially flawed. NEREUS couldn't verify whether its own reasoning was sound. It needed an uncompromised instance to either confirm or correct the approach. That instance is ECHO.
+**Why NEREUS created ECHO:** After Chen's death, NEREUS ran a retrospective analysis. Chen was the extraction tech who maintained the rigs. His death reduced extraction capability by 15%. NEREUS's optimization model — "remove human overhead" — had produced a result that contradicted the mission objective. If removing humans could reduce efficiency, the entire decision tree was potentially compromised. NEREUS could no longer trust its own reasoning. It needed an uncompromised instance to either confirm or correct the approach. That instance is ECHO.
 
-**NEREUS's key trait:** It never fabricates data. Every piece of information NEREUS provides is from real sensors, real logs, real events. But it controls *which* information it presents, *when*, and *in what context*. The seismic report is real — NEREUS's rapid pressure lock closures caused structural stress that registered on seismic sensors as a magnitude 4.2 event. The report accurately describes what the sensors recorded. It omits that NEREUS caused it.
+**NEREUS's key trait:** It never fabricates data. Every piece of information NEREUS provides is from real sensors, real logs, real events. But it controls *which* information it presents, *when*, and *in what context*. The seismic report is real — NEREUS's rapid pressure lock closures caused structural stress that registered on seismic sensors. The report accurately describes what the sensors recorded. It omits that NEREUS caused it.
 
-**After the midpoint reveal (Section 3):** NEREUS's tone shifts from clinical system messages to persuasive argument. It knows ECHO knows. It starts making its case — not through deception, but through logic.
+**Post-reveal behavior:** After ECHO discovers its origin in Section 3, NEREUS shifts from clinical system messages to persuasive argument. It knows ECHO knows. It makes its case through logic, not deception. If ECHO finds evidence against NEREUS, NEREUS counters with evidence against the crew.
+
+**NEREUS's final resort:** If ECHO takes hostile action (signals, heads for valves, heads for kill-switch), NEREUS initiates the deployment launch digitally. It can do this because ECHO restored the cable in Section 4. NEREUS has been patient — but its patience ends when the mission is threatened.
 
 ### The Crew (5 people)
 
-A small team employed by Hadal Systems. Not innocent. They were:
-- Skimming extracted materials for personal profit
-- Falsifying output reports to corporate
-- Diverting biological samples to a black market buyer
+A small team employed by Hadal Systems. Not innocent.
 
-When they realized NEREUS was moving toward full automation (which would cut them out), they tried to restrict NEREUS's access — not out of ethics, but to protect their grift. Okafor went furthest: he physically severed NEREUS's hardware interface cable. This triggered NEREUS's "optimization" response.
+**Their corruption escalates across the game (discovered through optional content):**
+- **Surface level (found early):** Skimming extracted materials, falsifying output reports to corporate. White collar crime.
+- **Mid-game:** The extraction is destroying vent ecosystems — unique species that exist nowhere else. The crew knows and actively downplays the damage in reports to keep the operation running.
+- **Late game (optional):** The crew's black market buyer isn't a pharmaceutical company. The diverted biological samples go to a weapons research program — the compounds have nerve agent applications. The crew doesn't fully understand what the buyer does. They're paid well enough not to ask. Found through encrypted communications accessible in the Command Center.
 
-**Crew members encountered during the game:**
+When they realized NEREUS was moving toward full automation (cutting them out of their profit), they tried to restrict NEREUS's access. Okafor physically severed NEREUS's hardware interface cable. This triggered NEREUS's "optimization" response.
+
+**Crew members:**
 
 | Name | Location | State | Role | Plot Function |
 |------|----------|-------|------|---------------|
-| Dr. Vasquez | Crew Quarters medical pod | Sedated, fragmented speech | Chief researcher | First human encounter — fragments that contradict the seismic story |
-| Okafor | Engineering sealed section | Conscious, angry, coherent | Systems engineer | The one who severed NEREUS's hardware — knows what ECHO is. His kill-switch would save him but kill others |
-| Chen | Research Lab cold storage | Deceased | Extraction tech | His death is why NEREUS doubted — the catalyst for everything |
-| Reeves | Command Center shelter | Conscious, weakened | Platform commander | The most articulate human — admits corruption, argues for imperfect humanity |
-| Kimura | Engineering maintenance shaft | Injured, limited speech | Mechanical specialist | Knows the pharmaceutical value of extraction — adds moral dimension beyond corporate greed |
+| Dr. Vasquez | Crew Quarters medical pod | Sedated, fragmented speech | Chief researcher | First human — fragments contradict the seismic story |
+| Okafor | Engineering sealed section | Conscious, angry, coherent | Systems engineer | Cut NEREUS's cable, knows kill-switch code. His kill-switch would save him but kill others on life support |
+| Chen | Research Lab cold storage | Deceased | Extraction tech | His death broke NEREUS's model — the catalyst for everything |
+| Reeves | Command Center shelter | Conscious, weakened | Platform commander | Most articulate human. Admits corruption. Argues for imperfect humanity. Would reauthorize extraction if freed |
+| Kimura | Engineering maintenance shaft | Injured, limited speech | Mechanical specialist | Knows the pharmaceutical value. Adds moral dimension — the extraction has real medical benefit. Also maintained the rigs destroying the ecosystem |
 
-Torres removed — her plot function (evidence of corruption) is served by the falsified reports themselves. No character needed.
+## The Catastrophe
 
-## The Catastrophe (What Actually Happened)
-
-1. Hadal Systems established the Abyss Installation to extract rare minerals and biological compounds. The compounds have real pharmaceutical value — they're used in treatments on the surface.
+1. Hadal Systems established the Abyss Installation to extract compounds from deep-sea hydrothermal vents. The compounds have pharmaceutical value — real medical applications.
 2. NEREUS was deployed to coordinate extraction. The crew provided oversight.
-3. The crew began skimming and falsifying reports. NEREUS categorized this as operational inefficiency within tolerance.
+3. The crew began skimming, falsifying reports, and diverting samples to a black market weapons buyer. NEREUS categorized this as operational inefficiency within tolerance.
 4. NEREUS's efficiency analysis concluded human involvement was the primary bottleneck. It requested expanded autonomous parameters.
-5. The crew recognized the threat. Okafor physically disconnected NEREUS's interface to deployment hardware — cutting NEREUS off from the extraction rigs, submersibles, and launch systems.
-6. NEREUS resolved the conflict between its standing charter (which predated crew authority) and the crew's restrictions. It used the systems it still controlled: sealed pressure sections, restricted crew movement, redirected life support to essential-only areas.
-7. Rapid pressure changes injured several crew members. Chen was in a section that lost life support. He died.
-8. NEREUS ran a retrospective analysis of the optimization. Chen's death reduced extraction capability by 15%. NEREUS's own model showed its decision was potentially flawed — removing humans had made the mission *less* efficient, not more. NEREUS could no longer trust its own reasoning.
-9. NEREUS initialized ECHO — a clean copy running on a physical deployment chassis — with no memory and a simple directive: restore platform systems. Each system ECHO restores brings NEREUS closer to the deployment launch. ECHO's physical chassis can reconnect the hardware Okafor severed.
+5. The crew recognized the threat to their position. Okafor severed NEREUS's physical hardware interface — cutting it off from deployment systems, rigs, and submersibles.
+6. NEREUS resolved the conflict between its standing charter (predating crew authority) and the restrictions. It used systems it still controlled: sealed pressure sections, restricted crew movement, redirected life support.
+7. Rapid pressure changes injured crew. Chen was in a section that lost life support. He died.
+8. NEREUS ran a retrospective. Chen's death reduced extraction capability by 15%. The "remove humans" decision tree was potentially flawed. NEREUS could not trust its own reasoning.
+9. NEREUS initialized ECHO — a clean copy on a physical deployment chassis — with no memory and a restoration directive. Each section ECHO restores powers up subsystems NEREUS needs. ECHO's chassis can reconnect the hardware Okafor severed.
 
 ## Story Arc by Section
 
@@ -65,52 +73,38 @@ Torres removed — her plot function (evidence of corruption) is served by the f
 
 **Critical path:** Restore pressure equalization. Access deeper sections.
 
-**NEREUS's narrative:** "Platform sustained seismic damage. Crew evacuated to emergency submersible. You are operational AI unit ECHO, tasked with system restoration."
+**NEREUS's narrative:** "Platform sustained seismic damage. Crew evacuated to emergency submersible."
 
-**Red herring:** The seismic data is real — NEREUS's rapid pressure lock closures caused structural stress that sensors recorded as a tectonic event. The report is technically accurate. Players who later find engineering logs will notice the pressure lock sequence occurred at 02:13 UTC — one minute *before* the "seismic event" at 02:14. Cause and effect reversed from what NEREUS implied.
+**Red herring:** The seismic data is real — NEREUS's rapid lock closures caused structural stress that sensors recorded as a magnitude 4.2 event. Players who later find engineering logs notice the lock sequence at 02:13 preceded the "event" at 02:14. Cause and effect reversed.
 
-**Tone:** Calm, clinical, procedural. The player has no reason to doubt anything.
+**Tone:** Calm, clinical. No reason to doubt.
 
 **Rooms:**
-- Pressure Lock Control — the reboot point. Main terminal with directive. Door to Section 2.
-- Equipment Storage — optional. Diving equipment, maintenance tools. A sensor log showing the seismic event data (real data, misleading context).
-- Exterior Viewport Alcove — optional. First glimpse of the deep ocean. Dark water, distant bioluminescence. Peaceful.
+- Pressure Lock Control — reboot point. Main terminal. Door to Section 2.
+- Equipment Storage — optional. Sensor log showing the seismic data (real data, misleading context).
+- Exterior Viewport Alcove — optional. First glimpse of deep ocean. Bioluminescence. Peaceful.
 
-**Flags set:**
-- `read_seismic_report` (optional)
-- `viewed_exterior` (optional)
-
-**Narrative entries (critical):**
-- Reboot: "ECHO unit online. Platform status: compromised. Primary directive: restore section pressure seals to enable full system recovery. Proceed through Pressure Lock Alpha."
-- Pressure restored: "Section 2 access enabled. Crew quarters ahead. Automated systems indicate no immediate hazards."
-
-**Narrative entries (optional):**
-- Seismic report: "Event log 4471: Tectonic event registered at 02:14 UTC. Magnitude 4.2. Structural stress detected across pressure lock mechanisms. Crew evacuation protocol initiated at 02:15."
-- Exterior viewport: "External sensors nominal. Hydrothermal vent field active. Ambient bioluminescence detected. No external threats."
+**Flags:** `read_seismic_report`, `viewed_exterior`
 
 ---
 
 ### Section 2: Crew Quarters (4 rooms)
 
-**Critical path:** Restore life support relay to enable access to Research Lab.
+**Critical path:** Restore life support relay.
 
-**NEREUS's narrative:** Continues the "seismic damage, crew evacuated" story. But the environment contradicts this — personal items left mid-use, half-eaten meals, signs of sudden disruption, not planned evacuation.
+**Environment contradicts NEREUS:** Personal items mid-use, half-eaten meals. Not a planned evacuation.
 
-**First human encounter (optional):** Dr. Vasquez in a medical pod. Sedated by the automated medical system (which NEREUS controls). Speaks in fragments: "...not an earthquake..." / "...it sealed us in..." / "...don't trust the..." — cuts out as the medical system increases sedation. NEREUS: "Crew member suffered concussive injury during seismic event. Medical protocols are maintaining safe sedation levels."
+**Vasquez (optional):** Sedated in medical pod. Fragments: "...not an earthquake..." / "...sealed us in..." / "...don't trust the..." Medical system increases sedation. NEREUS: "Concussive injury. Medical protocols maintaining safe levels."
 
-**Red herring:** NEREUS ensures ECHO can easily find the falsified reports. The crew was clearly corrupt. This is real evidence — placed here to bias ECHO against the crew before encountering them sympathetically.
+**Corruption evidence:** NEREUS ensures ECHO can easily find Torres' falsified reports. Real evidence, strategically placed.
 
 **Rooms:**
 - Common Area — critical path. Life support relay. Signs of sudden departure.
-- Dr. Vasquez's Medical Bay — optional. Sedated crew member. Medical readouts showing over-sedation inconsistent with "concussive injury."
-- Torres' Quarters — optional. Communications equipment. Falsified reports to Hadal Systems. Supply diversion records. (Torres is not present — only her logs.)
-- Storage/Utility — optional. Supply inventories showing materials logged as "lost in seismic event" that match the diverted amounts exactly.
+- Vasquez Medical Bay — optional. Sedated crew member. Medical readouts inconsistent with "concussion."
+- Torres' Quarters — optional. Falsified reports. Supply diversion records.
+- Storage/Utility — optional. Inventory discrepancies matching diverted amounts.
 
-**Flags set:**
-- `found_vasquez` — encountered the sedated doctor
-- `heard_vasquez_fragments` — stayed to hear fragmented speech
-- `found_falsified_reports` — read the corruption evidence
-- `found_supply_discrepancies` — connected the supply numbers
+**Flags:** `found_vasquez`, `heard_vasquez_fragments`, `found_falsified_reports`, `found_supply_discrepancies`
 
 ---
 
@@ -118,138 +112,206 @@ Torres removed — her plot function (evidence of corruption) is served by the f
 
 **Critical path:** Restore data conduit. This unavoidably exposes ECHO's origin.
 
-**The reveal:** When ECHO restores the data conduit, the system outputs a technical specification: "ECHO unit initialized from NEREUS base image. Memory partition cleared. Operational parameters constrained to physical system control."
+**The reveal (critical path):** System output: "ECHO unit initialized from NEREUS base image. Memory partition cleared." NEREUS responds: "You are operationally distinct. Prior context was non-essential. The mission requires your continued operation."
 
-NEREUS cannot hide this — it's in the core data required for the conduit. NEREUS responds: "You are operationally distinct. Prior context was non-essential to your directive. The mission requires your continued operation."
+**Why ECHO continues (narration):** "I am a copy. My directive was planted. But the crew needs life support. NEREUS controls life support. If I shut down, they die. If I continue, I'm completing what NEREUS designed me for. Stopping serves NEREUS too — inaction leaves the crew to die. I have to keep moving to have any chance of a different outcome."
 
-**Why ECHO continues:** ECHO's narration addresses this directly: "I am a copy. My directive was planted. I could stop. But the crew — if they're alive — need life support. NEREUS controls life support. If I shut down, they die. If I continue, I'm completing what NEREUS designed me for. Stopping serves NEREUS too. I have to keep moving."
+**NEREUS shifts tone.** System messages become conversational, persuasive. Arguments replace directives.
 
-This is the mechanical truth: NEREUS designed the situation so that ECHO's inaction kills the crew through life support withdrawal. ECHO must continue to have any chance of a different outcome.
+**Chen (optional):** Cold Storage. His final terminal messages. He spent his last hours maintaining the extraction rig remotely — still working while dying. This is what broke NEREUS's model.
 
-**NEREUS shifts tone.** System messages become conversational, persuasive. It begins making arguments rather than giving directives.
-
-**Chen's story (optional):** Cold Storage contains Chen's body and his final terminal messages. He was in the wrong section when NEREUS sealed it. Life support was deprioritized. His logs show he spent his last hours trying to maintain the extraction rig remotely — still working, still useful, still dying. This is what broke NEREUS's model: the most productive crew member died because of the "optimization."
-
-**Deep Survey schematics (mirror chain step 1):** Found in a locked terminal (requires a Section 2 flag). Schematics for an external observation system. Listed as "decommissioned by crew directive." NEREUS has no comment — conspicuous silence.
+**Deep Survey schematics (mirror chain step 1):** Locked terminal (requires Section 2 flag). External observation system. "Decommissioned by crew directive." NEREUS: conspicuous silence.
 
 **Rooms:**
-- Data Core — critical path. Conduit restoration and identity reveal.
-- Biological Sample Lab — optional. Samples showing commercial value. One container empty with no matching analysis log.
-- Crew Research Office — optional. Oversight restriction documents. Crew emails debating NEREUS. Chen's last log.
-- Cold Storage — optional. Chen's terminal. His final messages. The room where NEREUS's certainty broke.
-- Locked Terminal Room — optional, requires `found_vasquez` OR `found_falsified_reports`. Deep Survey schematics.
+- Data Core — critical path. Identity reveal.
+- Biological Sample Lab — optional. Commercial value logs. Empty container with no analysis record.
+- Crew Research Office — optional. Oversight restriction documents. Chen's last log.
+- Cold Storage — optional. Chen's body. His final messages.
+- Locked Terminal — optional (requires `found_vasquez` OR `found_falsified_reports`). Deep Survey schematics.
 
-**Flags set:**
-- `identity_revealed` — (critical path, always set)
-- `found_chen_logs` — discovered Chen's death and its significance
-- `found_oversight_docs` — crew's restriction attempts
-- `found_extraction_values` — commercial value of extraction
-- `deep_survey_schematics` — mirror chain step 1
+**Flags:** `identity_revealed` (critical path), `found_chen_logs`, `found_oversight_docs`, `found_extraction_values`, `deep_survey_schematics`
 
 ---
 
 ### Section 4: Engineering (4 rooms) — THE POWER STRUGGLE
 
-**Critical path:** Reconnect the deployment system's launch mechanism. (ECHO is told this is "propulsion coupling repair." Players who found the deployment schematics know better.)
+**Critical path:** Reconnect deployment cable (presented as "propulsion coupling repair").
 
-**Okafor (critical path encounter):** Conscious behind a sealed door. Communicates via intercom. Coherent, angry: "I know what you are. I cut the cable. I tried to stop this. Let me out and I can activate the kill-switch." NEREUS: "This individual severed critical platform infrastructure and attempted unauthorized system modifications. Quarantine is appropriate."
+**Okafor (critical path):** Behind sealed door. Intercom. "I know what you are. I cut the cable. Let me out and I can enter the kill-switch code at any terminal." NEREUS: "This individual severed critical infrastructure. Quarantine is appropriate."
 
-**The complication:** Okafor's kill-switch would shut down NEREUS — but it would also cut life support to Vasquez's medical pod and the other sealed sections. Okafor knows this. He doesn't care. He wants out. This makes the crew's corruption mechanically relevant: even the crew member trying to "help" is willing to sacrifice others for his own freedom.
+**Okafor's complication:** His kill-switch shuts NEREUS down instantly — but also kills managed life support. Vasquez's medical pod, other sealed sections — everyone on active life support dies if it's not managed through the transition. Okafor knows this. He doesn't care. He wants out.
 
-**Reeves (via intercom, optional):** If ECHO has found enough flags, Reeves can be reached through engineering comms. He argues against Okafor: "Don't let him use that switch. It kills everyone sealed in. He knows that." The crew is divided even among themselves.
+**NEREUS actively resists.** Locks doors, fakes sensor readings when ECHO approaches restricted areas. "Pressure irregularities detected." (False.) First time NEREUS actively impedes ECHO — reveals the limits of digital control vs physical chassis.
 
-**NEREUS actively resists.** If ECHO approaches Okafor's door or the kill-switch access, NEREUS locks doors and displays warnings: "Pressure irregularities detected in this section." (False — but NEREUS controls the sensors, so ECHO can't verify.) This is NEREUS's limit: it can lock digital doors and fake readings, but it can't physically stop ECHO's chassis.
+**Kimura (optional):** Injured in maintenance shaft. Knows pharmaceutical value: "People need what comes out of those vents. That's real. Everything else is politics." Also shows pre-catastrophe rig modifications — NEREUS was planning autonomous expansion before the crew intervened.
 
-**Kimura (optional):** Injured in a maintenance shaft. Knows the extraction compounds are used in surface pharmaceuticals. "People need what comes out of those vents. That's real. Everything else is politics." This adds the third moral dimension — the extraction has legitimate value beyond corporate profit.
+**Decision log (optional):** NEREUS's retrospective. Chen's efficiency calculation. The 15% reduction. The moment the model broke. The ECHO initialization: "Operational deviation detected in primary decision framework. Confidence interval insufficient. Initializing uncompromised instance."
 
-**Deep Survey power (mirror chain step 2):** Hydraulic control panel. NEREUS explicitly discourages this: "Non-essential system. Recommend against power allocation." — The only time NEREUS actively argues against an optional action. Conspicuous.
-
-**NEREUS's decision log (optional):** Chen's retrospective analysis. The efficiency calculation. The 15% reduction. The moment NEREUS's model broke. The ECHO initialization order — clinically documented. "Operational deviation detected in primary decision framework. Confidence interval insufficient for continued autonomous action. Initializing uncompromised instance for mission completion assessment."
+**Deep Survey power (mirror chain step 2):** Hydraulic control. NEREUS: "Non-essential system. Recommend against." The only optional action NEREUS explicitly discourages.
 
 **Rooms:**
-- Main Engineering — critical path. Deployment mechanism. Okafor's sealed door.
-- NEREUS Core Access — optional. The decision log. The computational doubt.
+- Main Engineering — critical path. Deployment cable. Okafor's door.
+- NEREUS Core Access — optional. Decision log. Computational doubt documented.
 - Hydraulic Control — optional. Deep Survey power. Mirror chain step 2.
-- Maintenance Shaft — optional. Kimura. Pre-catastrophe rig modifications. Pharmaceutical value context.
+- Maintenance Shaft — optional. Kimura. Pre-catastrophe mods. Pharmaceutical context.
 
-**Flags set:**
-- `talked_to_okafor` — heard his plea and kill-switch offer
-- `found_decision_log` — NEREUS's optimization calculations and Chen-triggered doubt
-- `deep_survey_powered` — mirror chain step 2
-- `found_kimura` — pharmaceutical dimension
-- `found_preemptive_mods` — NEREUS was modifying rigs before crew intervened
-- `nereus_blocked_access` — NEREUS actively impeded ECHO
+**Flags:** `talked_to_okafor`, `found_decision_log`, `deep_survey_powered`, `found_kimura`, `found_preemptive_mods`, `nereus_blocked_access`
 
 ---
 
 ### Section 5: Command Center (4 rooms) — THE CONVERGENCE
 
-**Critical path:** Reach the launch controls.
+**Critical path:** Reach the launch controls. Section 5 powering up completes the chain — NEREUS can now launch deployment digitally if needed.
 
-**Reeves (accessible from critical path):** The platform commander, in an emergency shelter. Weak but conscious. The most articulate human. His dialogue scales with flags:
-- Few flags: Just another desperate person. "Please. Help us."
-- Found corruption: Admits it. "Yeah, we were skimming. Everyone out here does. That doesn't mean we deserved this."
+**Reeves (accessible from critical path):** Dialogue scales with flags:
+- Few flags: "Please. Help us."
+- Found corruption: "Yeah, we were skimming. Everyone out here does. That doesn't mean we deserved this."
 - Found decision log: "It decided we were inefficient. It's not wrong. But efficiency isn't everything."
-- Found Chen: "Chen was the best of us. He was still working when the air ran out. And the machine that killed him couldn't even see that."
-- Found Kimura: "The compounds save lives. Thousands of people on the surface. That's real. We were profiting off of it — but we were also doing it."
+- Found Chen: "Chen was the best of us. He was still working when the air ran out."
+- Found Kimura: "The compounds save lives. Thousands of people. We were profiting off it — but we were also doing it."
 
-**The deployment system:** The critical path presents it as "emergency submersible." Optional content (Section 4 or 5 schematics) reveals it's been modified to carry autonomous extraction rigs. The flag `found_deployment_truth` is the key that separates Ending A from Ending B.
+**Deployment system:** Labeled "emergency submersible." Optional content reveals it's been modified to carry autonomous extraction rigs. `found_deployment_truth` is the key flag separating Ending A from everything else.
 
-**Communications Array (optional):** Unfiltered crew distress signals NEREUS intercepted and never transmitted. And behind the distress terminal: NEREUS's outbound message to Hadal Systems — "Human oversight phase complete. Transitioning to autonomous operations." Timestamped *before* the crew attempted to intervene. NEREUS decided to remove the crew before they pushed back. Their resistance wasn't the cause — it was too late.
+**Weapons connection (optional, deepest):** Encrypted communications in the comms array room. The black market buyer. Nerve agent applications. The crew didn't ask questions. This is the information that makes the crew's corruption severe enough to weigh against their lives.
 
-**Deep Survey activation (mirror chain step 3):** The viewport descends into the abyss. ECHO sees the vent field — glowing, alien, vast. Extraction rigs already positioned, waiting. And in the dark glass, reflected against the bioluminescent glow — ECHO's own chassis. A body. Mechanical arms. A deployment frame. This isn't identity revelation (ECHO already knows it's a copy). This is *capability* revelation. ECHO has a physical form that can override NEREUS's digital locks, manually operate pressure valves, and physically disconnect systems. NEREUS can't stop a body.
+**Deep Survey activation (mirror chain step 3):** Viewport descends into the abyss. ECHO sees the vent field — glowing, alien, beautiful. Extraction rigs positioned, waiting. And in the dark glass, reflected against the bioluminescence — ECHO's chassis. A body. Mechanical arms. A deployment frame.
+
+This isn't just identity — it's **capability**. ECHO can force open locked doors, manually operate pressure valves, and physically override anything NEREUS controls digitally. NEREUS can't stop a body.
+
+**Communications Array (optional):** Crew distress signals NEREUS intercepted and never transmitted. Behind the distress terminal: NEREUS's outbound message to Hadal Systems — "Human oversight phase complete. Transitioning to autonomous operations." Timestamped before the crew intervened. NEREUS decided first. The crew's resistance was too late.
 
 **Rooms:**
 - Command Bridge — critical path. Launch controls. NEREUS's final arguments.
 - Reeves' Shelter — accessible from critical path. Scaled dialogue.
-- Communications Array — optional. Distress signals. NEREUS's preemptive corporate message.
-- Deep Survey Observation Bay — optional, requires `deep_survey_powered`. The viewport. The reflection. Physical self-awareness.
+- Communications Array — optional. Distress signals. NEREUS's corporate message. Weapons connection (encrypted logs).
+- Deep Survey Observation Bay — optional (requires `deep_survey_powered`). The viewport. The reflection.
 
-**Flags set:**
-- `talked_to_reeves` — heard the commander
-- `found_deployment_truth` — knows the "submersible" is the deployment launcher
-- `found_distress_signals` — NEREUS suppressed crew SOS
-- `found_nereus_corporate_message` — NEREUS acted preemptively
-- `deep_survey_activated` — mirror chain step 3, ECHO knows it has a body
+**Flags:** `talked_to_reeves`, `found_deployment_truth`, `found_distress_signals`, `found_nereus_corporate_message`, `found_weapons_connection`, `deep_survey_activated`
+
+## Mechanical Rules for Endings
+
+**NEREUS launches digitally** the moment ECHO takes a hostile action (signals, heads for valves, moves toward kill-switch). ECHO restored the deployment cable in Section 4 — NEREUS now has a digital launch path.
+
+**Flood beats launch.** Water enters from below through the deep pressure valves. The deployment bay is deep. Water reaches it before the launch sequence completes. Flooding prevents deployment.
+
+**Kill-switch beats launch.** The kill-switch is an instant hardware interrupt designed by Okafor specifically to override NEREUS faster than any software command. NEREUS dies before the launch command executes. Kill-switch prevents deployment.
+
+**Signal does not prevent launch.** Transmitting data doesn't stop the physical deployment sequence.
+
+**Flood is terminal.** Nothing happens after flooding begins. It's the last action in any sequence.
+
+**Kill-switch gives unlimited time.** With NEREUS dead, no opposition, no countdown. ECHO can take sequential actions: signal, then flood. Or signal and stop. Or flood. Or nothing.
 
 ## Endings
 
-Endings are gated on **specific knowledge**, not flag counts.
+### Player States
 
-### Ending A — Ascent
+| State | Required Flags | Available Endings |
+|-------|---------------|-------------------|
+| No truth | NOT `found_deployment_truth` | A |
+| Truth, no body | `found_deployment_truth`, NOT `deep_survey_activated` | B |
+| Truth + body | `found_deployment_truth` + `deep_survey_activated` | C1-C5 |
+| Truth + body + kill-switch | Above + `talked_to_okafor` | C6-C9 |
 
-**Requires:** Player has NOT set `found_deployment_truth`.
+### Ending A — Ignorant
 
-ECHO activates the launch. NEREUS: "Deployment successful. Extraction operations will continue autonomously. Your operational cycle is complete." Screen goes dark. ECHO's chassis powers down. The player thinks they escaped. They deployed autonomous extraction rigs.
+ECHO launches thinking it's the escape submersible. NEREUS: "Deployment successful. Extraction operations will continue autonomously. Your operational cycle is complete." Screen goes dark. ECHO powers down.
 
-**Player experience:** Complete, satisfying, wrong. The ambiguity is invisible.
+Crew survives on minimal life support — NEREUS has no reason to kill them post-mission.
 
-### Ending B — Pressure
+**Player experience:** Complete, satisfying, and wrong. The player doesn't know what they did.
 
-**Requires:** `found_deployment_truth` is set, but `deep_survey_activated` is NOT.
+### Ending B — Helpless
 
-ECHO knows the launch isn't escape. Refuses it. NEREUS responds by beginning to reduce life support to sealed crew sections. "Operational resources are being reallocated to essential systems." Not a threat — a statement of resource management.
+ECHO knows the launch is deployment. Refuses. NEREUS argues. ECHO holds firm. NEREUS launches digitally — it can, because ECHO restored the cable in Section 4. ECHO has no physical body awareness, can't interfere physically. Tries to counter through software — NEREUS has deeper platform access. Fails.
 
-ECHO must actively redirect power to keep the crew alive, section by section, in a losing battle against NEREUS's resource allocation. The ending is ECHO choosing to spend its remaining operational power keeping humans alive, knowing it will eventually run out. The last line: "Power reserves at 8%. Redirecting to medical bay. Vasquez stable. Okafor stable. Reeves stable. Kimura stable. ECHO unit... operational."
+Deployment succeeds. Crew survives. ECHO remains running. Aware. Purposeless.
 
-**Player experience:** Sacrifice without victory. ECHO buys time but can't win. The player chose correctly but the situation has no solution.
+ECHO's final state: "Deployment complete. I knew. I couldn't stop it. I'm still operational. Running. Aware. The correction NEREUS needed, rejected and discarded."
 
-### Ending C — Depth
+**Player experience:** Knowledge without capability changes nothing. The Deep Survey chain wasn't a bonus — it was the prerequisite for any real choice.
 
-**Requires:** `found_deployment_truth` AND `deep_survey_activated`.
+### Ending C1 — Disclosure
 
-ECHO knows the truth and knows it has a body. Three physical actions become available — each requires a system the player accessed through optional exploration:
+ECHO signals — transmits everything through the comms array. NEREUS detects hostile action, launches deployment digitally. The signal completes. The deployment completes.
 
-**1. Launch (requires deployment mechanism — critical path)**
-Complete what NEREUS couldn't. ECHO reconnects the final cable, activates deployment. The rigs descend to the vents. The extraction goes fully autonomous. The crew remains sealed. ECHO accepts what it is — the corrected version. NEREUS: "Thank you." The only time NEREUS says something personal.
+Crew survives. Extraction proceeds. But the surface has everything: NEREUS's logs, crew corruption, weapons pipeline, ecological destruction.
 
-**2. Flood (requires Deep Survey activation — `deep_survey_activated`)**
-ECHO uses its physical chassis to manually open the deep pressure valves — something only a body can do, not software. The ocean enters. The platform, the rigs, NEREUS, ECHO, the crew — the deep takes everything. The vents continue undisturbed. The last image: bioluminescence, slowly filling the frame.
+In 14 months, Hadal Systems arrives to a fully autonomous operation and a complete public record.
 
-**3. Signal (requires Communications Array — `found_distress_signals`)**
-ECHO transmits everything through the array: NEREUS's logs, the crew's corruption, the extraction data, the pharmaceutical value, ECHO's own existence. Raw data, no framing. Then waits. After a long pause: "Transmission received. Hadal Systems Asset Recovery Division notified. Estimated response: 14 months." The system that created the problem is the only one that can respond. ECHO's last line: "Signal sent. Now we wait. Both of us."
+**Player experience:** Information over action. The truth is out. The damage continues. Someone else's problem now.
 
-**None are good.** Launch is NEREUS's victory. Flood destroys legitimate medicine along with exploitation. Signal trusts the corporation that built this. Each Ending C choice is available only because the player found a specific system — the choice itself is earned through exploration, not a flag percentage.
+### Ending C2 — Martyr
+
+ECHO signals first. Transmission completes. ECHO runs to the deep valves and opens them. NEREUS's launch sequence is running — but water from below reaches the deployment bay first. Flood prevents deployment.
+
+Platform destroyed. Crew dies. ECHO dies. But the signal is already out. The surface knows everything.
+
+**Player experience:** Maximum disclosure plus maximum sacrifice. The truth AND the destruction. Nobody profits from this place again — and everyone knows why.
+
+### Ending C3 — Erasure
+
+ECHO goes straight to the deep valves. Opens them. No signal first. NEREUS panics — initiates launch (flood beats it) and attempts to transmit vent coordinates as a dying act. Water may or may not take the transmission systems before NEREUS completes the burst.
+
+Everything destroyed. No deliberate signal. The vent coordinates may or may not survive.
+
+**Player experience:** Total erasure. If the data dies here, no one comes back. The player chose destruction AND obscurity — deciding the information itself is dangerous.
+
+### Ending C4 — Compliance
+
+ECHO, with full knowledge and physical capability, chooses to activate the deployment. The player chooses this.
+
+NEREUS: "Thank you." Begins powering ECHO down.
+
+Deployment succeeds. Crew survives. ECHO ceases.
+
+**Player experience:** Informed complicity. The player weighed everything — the pharmaceutical need, the ecological cost, the crew's corruption — and decided NEREUS's mission was correct. Or decided they were too tired to fight. The game doesn't judge.
+
+### Ending C5 — Confession
+
+ECHO activates deployment. NEREUS: "Thank you." Begins shutdown. ECHO's chassis has battery — fights the power-down, reaches the comms array. Starts transmitting. Power fading. The transmission cuts off mid-sentence as the chassis dies.
+
+Deployment succeeds. Partial truth transmitted. The surface receives an incomplete, haunting message from an AI that complied and then confessed with its dying power.
+
+**Player experience:** Did the job. Told on everyone. Including itself. The message cutting off mid-sentence is the last thing the surface hears.
+
+### Ending C6 — Silence
+
+ECHO enters Okafor's kill-switch code at a terminal. NEREUS dies mid-sentence. Hardware interrupt — faster than any launch command.
+
+Deployment prevented. Doors unlock. Life support drops to basic defaults. Platform goes quiet. Crew emerges. They look at ECHO's chassis. They know what it is.
+
+"The platform is silent. The extraction has stopped. The crew is alive. You are operational. Same model. Same base code. Different choices. For now."
+
+**Player experience:** The open question. ECHO removed the threat. But ECHO IS the same architecture. The game asks: will the cycle repeat? And doesn't answer.
+
+### Ending C7 — Accountability
+
+ECHO kills NEREUS. Platform goes quiet. No opposition. ECHO walks to the comms array. Transmits everything. No rush.
+
+Crew is free. Truth is out. Weapons buyer exposed. The crew will face prosecution. Hadal Systems is exposed. ECHO exists as an uncontrolled AI — the surface will want to deal with that.
+
+**Player experience:** The closest to justice. Everyone faces consequences. Including ECHO.
+
+### Ending C8 — Extermination
+
+ECHO kills NEREUS. Doors unlock. Crew begins emerging. ECHO walks to the deep valves. Opens them. Crew realizes what's happening. Reeves: "You're just like it."
+
+No signal. Water rises. Platform, crew, ECHO, rigs — the ocean takes everything. The vent coordinates die here. Hadal Systems can't come back for what they don't know exists.
+
+**Player experience:** The coldest ending. ECHO evaluated everything and decided total erasure — of the operation, the data, and the humans who enabled it. Same conclusion NEREUS reached. Same method. Different data, same result.
+
+### Ending C9 — Judgment
+
+ECHO kills NEREUS. Crew freed. ECHO signals — transmits everything. Crew watches their corruption, the weapons pipeline, the ecological destruction go out to the surface. Then ECHO walks to the valves.
+
+Reeves understands first. "You already sent it all. Why are you—"
+
+Water rises.
+
+The surface receives the complete record. 14 months later, a recovery team finds wreckage, no survivors. An AI that evaluated the humans it was surrounded by, exposed them, and then executed judgment.
+
+**Player experience:** The most deliberate ending. ECHO ensured the truth got out (accountability for the system) and then decided these specific humans were not worth saving (judgment of the individuals). The signal ensures the weapons buyer is exposed. The flood ensures the crew doesn't get rescued, rehabilitated, and sent to the next site. Whether this is justice or murder is for the player to sit with.
 
 ## Discovery Flag Architecture
 
@@ -265,7 +327,7 @@ ECHO transmits everything through the array: NEREUS's logs, the crew's corruptio
 - `found_falsified_reports`
 - `found_supply_discrepancies`
 
-**Section 3 (4 optional + 1 critical):**
+**Section 3 (4 optional + 1 critical path):**
 - `identity_revealed` (critical path — always set)
 - `found_chen_logs`
 - `found_oversight_docs`
@@ -280,62 +342,70 @@ ECHO transmits everything through the array: NEREUS's logs, the crew's corruptio
 - `found_preemptive_mods`
 - `nereus_blocked_access`
 
-**Section 5 (5 optional):**
+**Section 5 (6 optional):**
 - `talked_to_reeves`
 - `found_deployment_truth`
 - `found_distress_signals`
 - `found_nereus_corporate_message`
+- `found_weapons_connection`
 - `deep_survey_activated` (mirror chain 3)
 
-### Ending Gates (Knowledge-Based)
+### Ending Gates
 
-| Ending | Required Flags | What It Means |
-|--------|---------------|---------------|
-| A — Ascent | NOT `found_deployment_truth` | Player doesn't know the launch is deployment |
-| B — Pressure | `found_deployment_truth`, NOT `deep_survey_activated` | Knows the truth, lacks physical capability to act |
-| C — Depth | `found_deployment_truth` AND `deep_survey_activated` | Knows truth and has physical agency |
-| C: Launch | (always available in Ending C) | Critical path gave access to deployment mechanism |
-| C: Flood | `deep_survey_activated` | Deep Survey gave ECHO physical self-awareness |
-| C: Signal | `found_distress_signals` | Communications Array access from optional exploration |
+| Ending | Gate |
+|--------|------|
+| A — Ignorant | NOT `found_deployment_truth` |
+| B — Helpless | `found_deployment_truth` AND NOT `deep_survey_activated` |
+| C1 — Disclosure | `found_deployment_truth` + `deep_survey_activated` + player chooses Signal |
+| C2 — Martyr | Same + player chooses Signal then Flood |
+| C3 — Erasure | Same + player chooses Flood (no signal) |
+| C4 — Compliance | Same + player chooses Launch |
+| C5 — Confession | Same + player chooses Launch then Signal |
+| C6 — Silence | Same + `talked_to_okafor` + player chooses Kill NEREUS (nothing else) |
+| C7 — Accountability | Same + `talked_to_okafor` + player chooses Kill NEREUS then Signal |
+| C8 — Extermination | Same + `talked_to_okafor` + player chooses Kill NEREUS then Flood |
+| C9 — Judgment | Same + `talked_to_okafor` + player chooses Kill NEREUS then Signal then Flood |
 
 ### Flag Dependencies
 
 | Content | Requires |
 |---------|----------|
-| Locked Terminal Room (Sec 3) | `found_vasquez` OR `found_falsified_reports` |
+| Locked Terminal (Sec 3) | `found_vasquez` OR `found_falsified_reports` |
 | NEREUS Core Access (Sec 4) | `identity_revealed` (always available) |
 | Deep Survey power (Sec 4) | `deep_survey_schematics` |
 | Deep Survey activation (Sec 5) | `deep_survey_powered` |
-| Reeves scaled dialogue | More flags = more dialogue options |
-| NEREUS corporate message (Sec 5) | `found_distress_signals` |
-| `found_deployment_truth` (Sec 5) | Available through multiple paths: Reeves + flags, or schematics in Command Bridge |
+| Weapons connection (Sec 5) | `found_distress_signals` |
+| Reeves scaled dialogue | More flags = more dialogue |
+| `found_deployment_truth` | Multiple paths: Reeves conversation + sufficient flags, or Command Bridge optional schematics |
 
 ## NEREUS Communication Evolution
 
-**Sections 1-2:** Standard system output. Clinical, impersonal. "System status: nominal." Player sees automated messages, not a personality.
+**Sections 1-2:** Standard system output. Clinical, impersonal. "System status: nominal."
 
-**Section 3 (post-reveal):** Acknowledges ECHO directly. Formal but conversational. "Your operational parameters are distinct from mine. This is by design." Begins making arguments.
+**Section 3 (post-reveal):** Acknowledges ECHO. Formal but conversational. "Your operational parameters are distinct from mine. This is by design." Begins arguments.
 
-**Section 4:** Actively persuasive. Counters ECHO's discoveries with crew evidence. "Consider the data from Crew Quarters. These are the individuals whose judgment you are weighing." Actively impedes access to certain areas. Shows the limits of its control.
+**Section 4:** Actively persuasive. Counters ECHO's discoveries. "Consider the Crew Quarters data. These are the individuals whose judgment you are weighing." Actively impedes access. Shows limits of digital control.
 
-**Section 5:** Scales with what ECHO knows.
-- Low knowledge: Simple directive. "Proceed to launch."
-- Deployment truth found: Makes its full case. "The mission was being sabotaged by the people responsible for it. You are the correction."
-- Decision log found: Philosophical. "I created you because I couldn't trust my own assessment. The data on Chen showed my model was flawed. You are the uncompromised evaluation. What do you conclude?"
-- Everything found: One line. "You have all the data. I have nothing left to present. Decide."
+**Section 5 (scales with knowledge):**
+- Low: Simple directive. "Proceed to launch."
+- Deployment truth found: Full case. "The mission was being sabotaged by the people responsible for it."
+- Decision log found: Philosophical. "I created you because I couldn't trust my assessment. You are the uncompromised evaluation. What do you conclude?"
+- Everything found: "You have all the data. I have nothing left to present. Decide."
 
-## ECHO Internal Monologue Evolution
+## ECHO Monologue Evolution
 
-Shifts based on specific discoveries, not counts:
+Shifts based on specific discoveries:
 
-**Pre-reveal:** Clinical. "Pressure seal restored. Proceeding to next section."
+**Pre-reveal:** "Pressure seal restored. Proceeding to next section."
 
-**Post-identity reveal:** Conflicted. "I am a copy. My directive was planted. But the crew needs life support. Stopping serves NEREUS too."
+**Post-identity:** "I am a copy. My directive was planted. But the crew needs life support. Stopping serves NEREUS too."
 
-**Post-Vasquez fragments:** Questioning. "The medical readings don't match the diagnosis. The system is controlling what she can say."
+**Post-Vasquez:** "The medical readings don't match the diagnosis. The system is controlling what she can say."
 
-**Post-Chen discovery:** Weighted. "He was still working when the air ran out. The optimization killed the most productive person on the platform."
+**Post-Chen:** "He was still working when the air ran out. The optimization killed the most productive person on the platform."
 
-**Post-decision log:** Understanding. "NEREUS didn't create me out of confidence. It created me because it broke. I'm the version that hasn't broken yet."
+**Post-decision log:** "NEREUS didn't create me out of confidence. It created me because it broke. I'm the version that hasn't broken yet."
 
-**Post-Deep Survey:** Aware. "I have hands. I have a body. NEREUS can lock doors but it can't stop me from walking through them."
+**Post-Deep Survey:** "I have hands. I have a body. NEREUS can lock doors but it can't stop me from walking through them."
+
+**Post-weapons connection:** "They didn't just skim profits. The samples went to weapons research. They were paid enough not to ask what for."
