@@ -17,6 +17,8 @@ public partial class NarrativeManager : CanvasLayer
     private int _visibleChars;
     private float _charTimer;
     private const float CharDelay = 0.03f;
+    private int _cooldownFrames;
+    private bool _wasMouseDown;
 
     public bool IsDisplaying => _isDisplaying;
 
@@ -98,6 +100,7 @@ public partial class NarrativeManager : CanvasLayer
         _visibleChars = 0;
         _charTimer = 0;
         _isDisplaying = true;
+        _cooldownFrames = 3; // Ignore clicks for a few frames after showing
         _panel.Visible = true;
         GameLog.NarrativeText(text);
     }
@@ -138,10 +141,27 @@ public partial class NarrativeManager : CanvasLayer
     {
         if (!_isDisplaying) return;
 
-        if (Input.IsActionJustPressed("ui_accept") || Input.IsMouseButtonPressed(MouseButton.Left))
+        // Cooldown prevents the click that opened the panel from also dismissing it
+        if (_cooldownFrames > 0)
+        {
+            _cooldownFrames--;
+            return;
+        }
+
+        bool clicked = Input.IsActionJustPressed("ui_accept") || Input.IsActionJustPressed("click");
+
+        // Also check raw mouse button release (just released = one clean click)
+        if (!clicked && Input.IsMouseButtonPressed(MouseButton.Left) == false && _wasMouseDown)
+        {
+            clicked = true;
+        }
+        _wasMouseDown = Input.IsMouseButtonPressed(MouseButton.Left);
+
+        if (clicked)
         {
             if (_visibleChars < _fullText.Length)
             {
+                // Skip typewriter — show all text
                 _textDisplay.VisibleCharacters = -1;
                 _visibleChars = _fullText.Length;
                 return;
