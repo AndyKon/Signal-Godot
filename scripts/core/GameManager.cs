@@ -13,6 +13,7 @@ public partial class GameManager : Node
 
     public override void _Ready()
     {
+        GD.Print("[GameManager] _Ready called");
         Instance = this;
         State = new GameState();
         string saveDir = System.IO.Path.Combine(

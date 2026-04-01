@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/core/GameManager.cs" id="1"]
 [ext_resource type="Script" path="res://scripts/interaction/InteractionManager.cs" id="2"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://scripts/inventory/InventoryManager.cs" id="4"]
 [ext_resource type="Script" path="res://scripts/narrative/NarrativeManager.cs" id="5"]
 [ext_resource type="Script" path="res://scripts/audio/AudioManager.cs" id="6"]
+[ext_resource type="Script" path="res://scripts/ui/PauseMenu.cs" id="7"]
 
 [node name="Autoload" type="Node"]
 
@@ -26,3 +27,6 @@ script = ExtResource("5")
 
 [node name="AudioManager" type="Node" parent="."]
 script = ExtResource("6")
+
+[node name="PauseMenu" type="CanvasLayer" parent="."]
+script = ExtResource("7")

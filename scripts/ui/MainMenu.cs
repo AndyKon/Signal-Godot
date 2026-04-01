@@ -8,6 +8,10 @@ public partial class MainMenu : Control
 {
     public override void _Ready()
     {
+        GD.Print("[MainMenu] _Ready called");
+        GD.Print($"[MainMenu] GameManager.Instance = {GameManager.Instance}");
+        GD.Print($"[MainMenu] SceneLoader.Instance = {SceneLoader.Instance}");
+
         GetNode<Button>("VBox/NewGameButton").Pressed += OnNewGame;
         GetNode<Button>("VBox/LoadGameButton").Pressed += OnLoadGame;
         GetNode<Button>("VBox/QuitButton").Pressed += OnQuit;
@@ -15,8 +19,24 @@ public partial class MainMenu : Control
 
     private void OnNewGame()
     {
-        GameManager.Instance?.NewGame();
-        SceneLoader.Instance?.LoadScene("Section1_Hub_Room1", isNewSection: true);
+        GD.Print("[MainMenu] New Game clicked");
+        GD.Print($"[MainMenu] GameManager.Instance = {GameManager.Instance}");
+        GD.Print($"[MainMenu] SceneLoader.Instance = {SceneLoader.Instance}");
+
+        if (GameManager.Instance == null)
+        {
+            GD.PrintErr("[MainMenu] GameManager.Instance is null!");
+            return;
+        }
+
+        if (SceneLoader.Instance == null)
+        {
+            GD.PrintErr("[MainMenu] SceneLoader.Instance is null!");
+            return;
+        }
+
+        GameManager.Instance.NewGame();
+        SceneLoader.Instance.LoadScene("Section1_Hub_Room1", isNewSection: true);
     }
 
     private void OnLoadGame()
