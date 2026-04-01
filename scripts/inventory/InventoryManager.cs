@@ -16,11 +16,11 @@ public partial class InventoryManager : Node
     {
         Instance = this;
         LoadItemDefinitions();
+        GameLog.ManagerReady("InventoryManager");
     }
 
     private void LoadItemDefinitions()
     {
-        // Load all .tres files from data/items/
         string dir = "res://data/items/";
         if (!DirAccess.DirExistsAbsolute(dir)) return;
 
@@ -39,17 +39,20 @@ public partial class InventoryManager : Node
             }
             file = dirAccess.GetNext();
         }
+        GameLog.Event("Inventory", $"Loaded {_itemLookup.Count} item definitions");
     }
 
     public void AddItem(string itemId)
     {
         GameManager.Instance.State.AddItem(itemId);
+        GameLog.ItemAdded(itemId);
         EmitSignal(SignalName.InventoryChanged);
     }
 
     public void RemoveItem(string itemId)
     {
         GameManager.Instance.State.RemoveItem(itemId);
+        GameLog.ItemRemoved(itemId);
         EmitSignal(SignalName.InventoryChanged);
     }
 

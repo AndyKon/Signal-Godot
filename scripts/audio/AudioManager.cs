@@ -1,4 +1,5 @@
 using Godot;
+using Signal.Core;
 
 namespace Signal.Audio;
 
@@ -14,6 +15,7 @@ public partial class AudioManager : Node
     public override void _Ready()
     {
         Instance = this;
+        GameLog.ManagerReady("AudioManager");
 
         _musicPlayer = new AudioStreamPlayer();
         _musicPlayer.Bus = "Music";

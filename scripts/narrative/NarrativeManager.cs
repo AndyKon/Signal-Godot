@@ -17,7 +17,6 @@ public partial class NarrativeManager : CanvasLayer
     private int _visibleChars;
     private float _charTimer;
     private const float CharDelay = 0.03f;
-    private bool _skipRequested;
 
     public bool IsDisplaying => _isDisplaying;
 
@@ -30,6 +29,7 @@ public partial class NarrativeManager : CanvasLayer
         LoadNarrativeEntries();
 
         _panel.Visible = false;
+        GameLog.ManagerReady("NarrativeManager");
     }
 
     private void BuildUI()
@@ -79,6 +79,7 @@ public partial class NarrativeManager : CanvasLayer
             }
             file = dirAccess.GetNext();
         }
+        GameLog.Event("Narrative", $"Loaded {_entryLookup.Count} entries");
     }
 
     public void ShowText(string text)
@@ -88,16 +89,16 @@ public partial class NarrativeManager : CanvasLayer
         _textDisplay.VisibleCharacters = 0;
         _visibleChars = 0;
         _charTimer = 0;
-        _skipRequested = false;
         _isDisplaying = true;
         _panel.Visible = true;
+        GameLog.NarrativeText(text);
     }
 
     public void PlayEntry(string entryId)
     {
         if (!_entryLookup.TryGetValue(entryId, out var entry))
         {
-            GD.PushWarning($"Narrative entry not found: {entryId}");
+            GameLog.Error("Narrative", $"Entry not found: {entryId}");
             return;
         }
 
@@ -109,6 +110,7 @@ public partial class NarrativeManager : CanvasLayer
         string text = useAlt ? entry.AltText : entry.Text;
         AudioStream clip = useAlt ? entry.AltVoiceClip : entry.VoiceClip;
 
+        GameLog.NarrativeShown(entryId);
         ShowText(text);
 
         if (clip != null)
@@ -118,32 +120,31 @@ public partial class NarrativeManager : CanvasLayer
         }
 
         if (state != null && !string.IsNullOrEmpty(entry.FlagToSet))
+        {
             state.SetFlag(entry.FlagToSet);
+            GameLog.FlagSet(entry.FlagToSet);
+        }
     }
 
     public override void _Process(double delta)
     {
         if (!_isDisplaying) return;
 
-        // Handle skip/dismiss
         if (Input.IsActionJustPressed("ui_accept") || Input.IsMouseButtonPressed(MouseButton.Left))
         {
             if (_visibleChars < _fullText.Length)
             {
-                // Skip typewriter — show all text
                 _textDisplay.VisibleCharacters = -1;
                 _visibleChars = _fullText.Length;
                 return;
             }
             else
             {
-                // Dismiss
                 Hide();
                 return;
             }
         }
 
-        // Typewriter effect
         if (_visibleChars < _fullText.Length)
         {
             _charTimer += (float)delta;

@@ -15,7 +15,6 @@ public partial class SceneLoader : Node
     {
         Instance = this;
 
-        // Create full-screen fade overlay
         var canvas = new CanvasLayer();
         canvas.Layer = 100;
         AddChild(canvas);
@@ -25,6 +24,8 @@ public partial class SceneLoader : Node
         _overlay.AnchorsPreset = (int)Control.LayoutPreset.FullRect;
         _overlay.MouseFilter = Control.MouseFilterEnum.Ignore;
         canvas.AddChild(_overlay);
+
+        GameLog.ManagerReady("SceneLoader");
     }
 
     public async void LoadScene(string scenePath, bool isNewSection = false)
@@ -32,24 +33,26 @@ public partial class SceneLoader : Node
         if (_isLoading) return;
         _isLoading = true;
 
-        // Resolve scene path
+        string currentScene = GameManager.Instance?.State.CurrentScene ?? "unknown";
         string fullPath = scenePath.StartsWith("res://") ? scenePath : $"res://scenes/{scenePath}.tscn";
+
+        GameLog.SceneTransition(currentScene, scenePath);
 
         // Fade out
         var tween = CreateTween();
         tween.TweenProperty(_overlay, "color:a", 1.0f, _fadeDuration);
         await ToSignal(tween, Tween.SignalName.Finished);
 
-        // Load scene
         GetTree().ChangeSceneToFile(fullPath);
 
-        // Update game state
         if (GameManager.Instance != null)
         {
             GameManager.Instance.State.CurrentScene = scenePath;
             if (isNewSection)
                 GameManager.Instance.SaveToSlot(0);
         }
+
+        GameLog.SceneLoaded(scenePath);
 
         // Fade in
         tween = CreateTween();

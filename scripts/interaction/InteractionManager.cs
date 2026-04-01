@@ -12,6 +12,7 @@ public partial class InteractionManager : Node
     public override void _Ready()
     {
         Instance = this;
+        GameLog.ManagerReady("InteractionManager");
     }
 
     public void ConnectHotspot(Hotspot hotspot)
@@ -28,6 +29,7 @@ public partial class InteractionManager : Node
     {
         var action = hotspot.GetAction();
         if (action == null) return;
+        GameLog.HotspotClicked(hotspot.Name, action.Type.ToString());
         ExecuteAction(action);
     }
 

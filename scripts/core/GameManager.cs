@@ -13,18 +13,19 @@ public partial class GameManager : Node
 
     public override void _Ready()
     {
-        GD.Print("[GameManager] _Ready called");
         Instance = this;
         State = new GameState();
         string saveDir = System.IO.Path.Combine(
             OS.GetUserDataDir(), "saves");
         SaveSystem = new SaveSystem(saveDir, MaxSaveSlots);
+        GameLog.ManagerReady("GameManager");
     }
 
     public void SaveToSlot(int slot)
     {
         SaveData data = State.ToSaveData();
         SaveSystem.Save(slot, data);
+        GameLog.SavedToSlot(slot);
     }
 
     public bool LoadFromSlot(int slot)
@@ -32,11 +33,13 @@ public partial class GameManager : Node
         SaveData data = SaveSystem.Load(slot);
         if (data == null) return false;
         State.LoadFromSaveData(data);
+        GameLog.LoadedFromSlot(slot);
         return true;
     }
 
     public void NewGame()
     {
         State.Reset();
+        GameLog.NewGame();
     }
 }
