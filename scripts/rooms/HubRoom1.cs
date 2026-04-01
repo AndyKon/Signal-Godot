@@ -7,52 +7,28 @@ public partial class HubRoom1 : Node2D
 {
     public override void _Ready()
     {
-        BuildRoom();
-    }
+        // Dark blue background
+        RoomBuilder.AddBackground(this, new Color(0.08f, 0.1f, 0.18f));
 
-    private void BuildRoom()
-    {
-        // Background
-        var bg = new ColorRect();
-        bg.Color = new Color(0.08f, 0.1f, 0.18f);
-        bg.Position = new Vector2(-640, -360);
-        bg.Size = new Vector2(1280, 720);
-        AddChild(bg);
+        // Intro terminal — center of screen
+        RoomBuilder.AddHotspot(this, "IntroTerminal",
+            center: new Vector2(0, 0),
+            size: new Vector2(160, 100),
+            action: new HotspotData { Type = HotspotType.Narration, NarrativeEntryId = "hub_reboot_01" });
+        RoomBuilder.AddLabel(this, "[ Intro Terminal ]", new Vector2(0, 60));
 
-        // Intro Terminal
-        AddChild(CreateHotspot("IntroTerminal", new Vector2(0, 64), new Vector2(192, 128),
-            new HotspotData { Type = HotspotType.Narration, NarrativeEntryId = "hub_reboot_01" }));
+        // Optional terminal — left side
+        RoomBuilder.AddHotspot(this, "OptionalTerminal",
+            center: new Vector2(-350, 0),
+            size: new Vector2(120, 100),
+            action: new HotspotData { Type = HotspotType.Narration, NarrativeEntryId = "hub_optional_terminal" });
+        RoomBuilder.AddLabel(this, "Optional Terminal", new Vector2(-350, 60));
 
-        // Optional Terminal
-        AddChild(CreateHotspot("OptionalTerminal", new Vector2(-320, 64), new Vector2(128, 128),
-            new HotspotData { Type = HotspotType.Narration, NarrativeEntryId = "hub_optional_terminal" }));
-
-        // Door to Room 2
-        AddChild(CreateHotspot("DoorToRoom2", new Vector2(384, 0), new Vector2(128, 192),
-            new HotspotData { Type = HotspotType.Door, TargetScene = "Section1_Hub_Room2" }));
-
-        // Connect hotspots
-        foreach (var child in GetChildren())
-        {
-            if (child is Hotspot hotspot)
-                InteractionManager.Instance?.ConnectHotspot(hotspot);
-        }
-    }
-
-    private Hotspot CreateHotspot(string name, Vector2 position, Vector2 size, HotspotData action, HotspotCondition condition = null)
-    {
-        var hotspot = new Hotspot();
-        hotspot.Name = name;
-        hotspot.Position = position;
-        hotspot.Action = action;
-        hotspot.Condition = condition;
-
-        var shape = new CollisionShape2D();
-        var rect = new RectangleShape2D();
-        rect.Size = size;
-        shape.Shape = rect;
-        hotspot.AddChild(shape);
-
-        return hotspot;
+        // Door to Room 2 — right side
+        RoomBuilder.AddHotspot(this, "DoorToRoom2",
+            center: new Vector2(400, 0),
+            size: new Vector2(100, 160),
+            action: new HotspotData { Type = HotspotType.Door, TargetScene = "Section1_Hub_Room2" });
+        RoomBuilder.AddLabel(this, "Door >", new Vector2(400, 90));
     }
 }
