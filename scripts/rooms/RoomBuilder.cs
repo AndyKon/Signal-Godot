@@ -5,17 +5,22 @@ namespace Signal.Rooms;
 
 /// <summary>
 /// Shared helper for building rooms programmatically.
-/// All positions are relative to screen center (0,0).
-/// Screen extents: (-640,-360) to (640,360) at 1280x720.
+/// Godot 2D origin is top-left (0,0). Screen is 1280x720.
+/// Center of screen is (640, 360).
 /// </summary>
 public static class RoomBuilder
 {
+    public const float ScreenW = 1280;
+    public const float ScreenH = 720;
+    public const float CenterX = ScreenW / 2;
+    public const float CenterY = ScreenH / 2;
+
     public static ColorRect AddBackground(Node2D parent, Color color)
     {
         var bg = new ColorRect();
         bg.Color = color;
-        bg.Position = new Vector2(-640, -360);
-        bg.Size = new Vector2(1280, 720);
+        bg.Position = new Vector2(0, 0);
+        bg.Size = new Vector2(ScreenW, ScreenH);
         bg.ZIndex = -10;
         bg.MouseFilter = Control.MouseFilterEnum.Ignore;
         parent.AddChild(bg);

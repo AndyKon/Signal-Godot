@@ -27,6 +27,9 @@ public partial class InteractionManager : Node
 
     private void OnHotspotClicked(Hotspot hotspot)
     {
+        // Block clicks when narrative is displaying
+        if (Narrative.NarrativeManager.Instance?.IsDisplaying == true) return;
+
         var action = hotspot.GetAction();
         if (action == null) return;
         GameLog.HotspotClicked(hotspot.Name, action.Type.ToString());
@@ -42,7 +45,10 @@ public partial class InteractionManager : Node
             InventoryManager.Instance?.RemoveItem(action.ItemToConsume);
 
         if (!string.IsNullOrEmpty(action.FlagToSet))
+        {
             state.SetFlag(action.FlagToSet);
+            GameLog.FlagSet(action.FlagToSet);
+        }
 
         if (!string.IsNullOrEmpty(action.ItemToGrant))
             InventoryManager.Instance?.AddItem(action.ItemToGrant);
