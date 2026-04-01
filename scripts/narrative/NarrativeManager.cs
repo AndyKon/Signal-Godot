@@ -34,10 +34,16 @@ public partial class NarrativeManager : CanvasLayer
 
     private void BuildUI()
     {
+        // Root control to anchor against (CanvasLayer needs this)
+        var root = new Control();
+        root.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+        root.MouseFilter = Control.MouseFilterEnum.Ignore;
+        AddChild(root);
+
         _panel = new PanelContainer();
-        _panel.AnchorsPreset = (int)Control.LayoutPreset.BottomWide;
+        _panel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.BottomWide);
         _panel.OffsetTop = -120;
-        _panel.OffsetBottom = 0;
+        _panel.CustomMinimumSize = new Vector2(0, 120);
 
         var stylebox = new StyleBoxFlat();
         stylebox.BgColor = new Color(0, 0, 0, 0.78f);
@@ -46,13 +52,15 @@ public partial class NarrativeManager : CanvasLayer
         stylebox.ContentMarginTop = 12;
         stylebox.ContentMarginBottom = 12;
         _panel.AddThemeStyleboxOverride("panel", stylebox);
-        AddChild(_panel);
+        root.AddChild(_panel);
 
         _textDisplay = new RichTextLabel();
         _textDisplay.BbcodeEnabled = true;
         _textDisplay.FitContent = true;
         _textDisplay.ScrollActive = false;
         _textDisplay.VisibleCharacters = 0;
+        _textDisplay.AddThemeColorOverride("default_color", Colors.White);
+        _textDisplay.AddThemeFontSizeOverride("normal_font_size", 18);
         _panel.AddChild(_textDisplay);
 
         _voicePlayer = new AudioStreamPlayer();
