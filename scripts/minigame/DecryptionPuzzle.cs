@@ -13,35 +13,32 @@ public class DecryptionPuzzle
     public int ValueCount { get; }
     public bool AllowRepeats { get; }
     public int LiesPerRound { get; }
-    public int GuessesPerBatch { get; }
-    public float CooldownSeconds { get; }
+    public float ReplayLieChance { get; }
+    public int MaxReplayLiesPerCycle { get; }
 
     private readonly int[] _answer;
     private readonly Random _rng;
     private readonly List<GuessResult> _history = new();
 
-    private int _guessesRemaining;
     private bool _solved;
 
     public bool IsSolved => _solved;
     public int GuessesMade => _history.Count;
-    public int GuessesRemaining => _guessesRemaining;
     public IReadOnlyList<GuessResult> History => _history;
     public int[] Answer => _solved ? (int[])_answer.Clone() : null; // Only reveal after solved
 
     public DecryptionPuzzle(int slots, int values, bool allowRepeats, int liesPerRound,
-                            int guessesPerBatch, float cooldownSeconds, int seed)
+                            float replayLieChance, int maxReplayLiesPerCycle, int seed)
     {
         SlotCount = slots;
         ValueCount = values;
         AllowRepeats = allowRepeats;
         LiesPerRound = liesPerRound;
-        GuessesPerBatch = guessesPerBatch;
-        CooldownSeconds = cooldownSeconds;
+        ReplayLieChance = replayLieChance;
+        MaxReplayLiesPerCycle = maxReplayLiesPerCycle;
 
         _rng = new Random(seed);
         _answer = GenerateAnswer();
-        _guessesRemaining = guessesPerBatch;
     }
 
     private int[] GenerateAnswer()
@@ -69,14 +66,13 @@ public class DecryptionPuzzle
 
     /// <summary>
     /// Submit a guess. Returns the result with feedback per slot.
-    /// Returns null if no guesses remaining (need cooldown reset).
+    /// Returns null only if already solved or guess has wrong length.
+    /// No guessing limits — the player can always keep guessing.
     /// </summary>
     public GuessResult SubmitGuess(int[] guess)
     {
-        if (_solved || _guessesRemaining <= 0 || guess.Length != SlotCount)
+        if (_solved || guess.Length != SlotCount)
             return null;
-
-        _guessesRemaining--;
 
         // Calculate true feedback
         var feedback = new SlotFeedback[SlotCount];
@@ -167,14 +163,41 @@ public class DecryptionPuzzle
     }
 
     /// <summary>
-    /// Reset the guess counter after a cooldown period.
+    /// Prepare replay data for all historical guesses. For each entry, may alter one
+    /// feedback slot based on ReplayLieChance and MaxReplayLiesPerCycle — either
+    /// fixing a prior lie or introducing a new one.
     /// </summary>
-    public void ResetGuesses()
+    public ReplayResult[] PrepareReplay()
     {
-        _guessesRemaining = GuessesPerBatch;
-    }
+        var results = new ReplayResult[_history.Count];
+        int liesThisCycle = 0;
 
-    public bool NeedsCooldown => _guessesRemaining <= 0 && !_solved;
+        for (int h = 0; h < _history.Count; h++)
+        {
+            var entry = _history[h];
+            var displayFeedback = (SlotFeedback[])entry.DisplayFeedback.Clone();
+            var alteredSlots = new bool[SlotCount];
+
+            bool shouldAlter = liesThisCycle < MaxReplayLiesPerCycle
+                               && (float)_rng.NextDouble() < ReplayLieChance;
+
+            if (shouldAlter)
+            {
+                int slot = _rng.Next(SlotCount);
+                displayFeedback[slot] = InvertFeedback(displayFeedback[slot]);
+                alteredSlots[slot] = true;
+                liesThisCycle++;
+            }
+
+            results[h] = new ReplayResult
+            {
+                DisplayFeedback = displayFeedback,
+                AlteredSlots = alteredSlots
+            };
+        }
+
+        return results;
+    }
 
     private SlotFeedback InvertFeedback(SlotFeedback real)
     {
@@ -192,27 +215,27 @@ public class DecryptionPuzzle
 
     public static DecryptionPuzzle CreateSection1(int seed) =>
         new(slots: 4, values: 6, allowRepeats: false, liesPerRound: 0,
-            guessesPerBatch: 5, cooldownSeconds: 0, seed: seed);
+            replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed);
 
     public static DecryptionPuzzle CreateSection2(int seed) =>
         new(slots: 4, values: 6, allowRepeats: true, liesPerRound: 0,
-            guessesPerBatch: 5, cooldownSeconds: 0, seed: seed);
+            replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed);
 
     public static DecryptionPuzzle CreateSection3(int seed) =>
         new(slots: 5, values: 8, allowRepeats: true, liesPerRound: 1,
-            guessesPerBatch: 4, cooldownSeconds: 12, seed: seed);
+            replayLieChance: 0.3f, maxReplayLiesPerCycle: 1, seed: seed);
 
     public static DecryptionPuzzle CreateSection4(int seed) =>
         new(slots: 5, values: 8, allowRepeats: true, liesPerRound: 1,
-            guessesPerBatch: 4, cooldownSeconds: 12, seed: seed);
+            replayLieChance: 0.6f, maxReplayLiesPerCycle: 1, seed: seed);
 
     public static DecryptionPuzzle CreateSection5Hostile(int seed) =>
-        new(slots: 6, values: 10, allowRepeats: true, liesPerRound: 2,
-            guessesPerBatch: 3, cooldownSeconds: 15, seed: seed);
+        new(slots: 6, values: 8, allowRepeats: true, liesPerRound: 2,
+            replayLieChance: 0.8f, maxReplayLiesPerCycle: 2, seed: seed);
 
     public static DecryptionPuzzle CreateSection5Cooperative(int seed) =>
         new(slots: 4, values: 6, allowRepeats: false, liesPerRound: 0,
-            guessesPerBatch: 5, cooldownSeconds: 0, seed: seed);
+            replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed);
 }
 
 public enum SlotFeedback
@@ -229,4 +252,10 @@ public class GuessResult
     public SlotFeedback[] DisplayFeedback; // What NEREUS shows (may include lies)
     public bool[] LiedSlots;               // Which slots NEREUS lied about
     public bool IsSolution;
+}
+
+public class ReplayResult
+{
+    public SlotFeedback[] DisplayFeedback;
+    public bool[] AlteredSlots;
 }
