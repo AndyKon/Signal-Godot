@@ -307,14 +307,6 @@ public partial class DecryptionPuzzleUI : Control
         _submitButton.Pressed += TrySubmit;
         inputRow.AddChild(_submitButton);
 
-        var cancelBtn = new Button();
-        cancelBtn.Text = "✕";
-        cancelBtn.CustomMinimumSize = new Vector2(40, SlotSize);
-        cancelBtn.AddThemeFontSizeOverride("font_size", 16);
-        cancelBtn.TooltipText = "Cancel";
-        cancelBtn.Pressed += OnCancel;
-        inputRow.AddChild(cancelBtn);
-
         // ── 6. Value picker ───────────────────────────────────────────────────
         var pickerRow = new HBoxContainer();
         pickerRow.AddThemeConstantOverride("separation", 6);

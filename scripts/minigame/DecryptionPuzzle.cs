@@ -235,8 +235,8 @@ public class DecryptionPuzzle
             replayLieChance: 0.15f, maxReplayLiesPerCycle: 1, seed: seed);
 
     public static DecryptionPuzzle CreateSection4(int seed) =>
-        new(slots: 5, values: 8, allowRepeats: true, liesPerRound: 1,
-            replayLieChance: 0.6f, maxReplayLiesPerCycle: 1, seed: seed);
+        new(slots: 4, values: 6, allowRepeats: true, liesPerRound: 1,
+            replayLieChance: 0.4f, maxReplayLiesPerCycle: 1, seed: seed);
 
     public static DecryptionPuzzle CreateSection5Hostile(int seed) =>
         new(slots: 6, values: 8, allowRepeats: true, liesPerRound: 2,
