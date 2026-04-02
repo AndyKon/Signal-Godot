@@ -17,8 +17,8 @@ public partial class DecryptionPuzzleUI : Control
     private const int SlotSize = 60;
     private const int SlotGap = 10;
     private const int FeedbackDotSize = 14;
-    private const int TerminalMaxWidth = 800;
-    private const int TerminalPadding = 48;
+    private const int TerminalMaxWidth = 960;
+    private const int TerminalPadding = 56;
 
     // ── Terminal colour palette ───────────────────────────────────────────────
     private static readonly Color ColorTermBg     = new Color(0.0f,  0.0f,  0.02f);   // near-black
@@ -27,18 +27,18 @@ public partial class DecryptionPuzzleUI : Control
     private static readonly Color ColorTermText   = new Color(0.0f,  0.9f,  0.4f);    // neon green
     private static readonly Color ColorTermDim    = new Color(0.0f,  0.45f, 0.2f);    // dim green
 
-    // ── Hex value theme — green-spectrum with subtle differentiation ──────────
+    // ── Hex value theme — distinct, saturated, readable on dark bg ───────────
     private static readonly string[] HexLabels = { "0a", "3f", "b2", "e7", "1c", "d4", "8f", "5b" };
     private static readonly Color[] HexTints =
     {
-        new Color(0.0f,  0.55f, 0.7f),  // 0a — cyan
-        new Color(0.0f,  0.7f,  0.5f),  // 3f — teal
-        new Color(0.0f,  0.8f,  0.3f),  // b2 — green
-        new Color(0.4f,  0.75f, 0.0f),  // e7 — lime
-        new Color(0.7f,  0.6f,  0.0f),  // 1c — amber
-        new Color(0.0f,  0.5f,  0.8f),  // d4 — blue
-        new Color(0.4f,  0.3f,  0.8f),  // 8f — indigo
-        new Color(0.6f,  0.2f,  0.7f),  // 5b — violet
+        new Color(0.0f,  0.7f,  1.0f),  // 0a — bright cyan
+        new Color(0.0f,  0.9f,  0.6f),  // 3f — mint
+        new Color(0.2f,  1.0f,  0.2f),  // b2 — neon green
+        new Color(0.8f,  0.9f,  0.0f),  // e7 — yellow-lime
+        new Color(1.0f,  0.6f,  0.0f),  // 1c — orange
+        new Color(0.3f,  0.5f,  1.0f),  // d4 — blue
+        new Color(0.7f,  0.4f,  1.0f),  // 8f — purple
+        new Color(1.0f,  0.3f,  0.7f),  // 5b — hot pink
     };
 
     // ── Feedback colours — high contrast against terminal black ───────────────
@@ -613,6 +613,16 @@ public partial class DecryptionPuzzleUI : Control
             _historyScroll.ScrollVertical = (int)_historyScroll.GetVScrollBar().MaxValue;
     }
 
+    private void ScrollToRow(int rowIndex)
+    {
+        if (_historyScroll == null || _historyVBox == null) return;
+        if (rowIndex >= _historyVBox.GetChildCount()) return;
+        var row = _historyVBox.GetChild(rowIndex) as Control;
+        if (row == null) return;
+        // Scroll so this row is visible near the top of the scroll area
+        _historyScroll.ScrollVertical = (int)Mathf.Max(0, row.Position.Y - 8);
+    }
+
     private void ResetRowToPending(int rowIndex)
     {
         if (rowIndex >= _historySlotBgs.Count) return;
@@ -750,8 +760,13 @@ public partial class DecryptionPuzzleUI : Control
             _animRow   = historyCount - 1;
             _animSlot  = 0;
             _animTimer = NewSlotDelay;
+            CallDeferred(nameof(ScrollHistoryToBottom));
             return;
         }
+
+        // Scroll to keep active row visible
+        if (_animSlot == 0)
+            CallDeferred(nameof(ScrollToRow), _animRow);
 
         // Reveal one slot in the current replay row
         var replayRow = _replayResults[_animRow];
