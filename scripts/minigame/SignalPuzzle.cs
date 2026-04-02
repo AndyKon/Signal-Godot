@@ -27,14 +27,13 @@ public partial class SignalPuzzle : Control
     private float _completionFlashTimer;
     private int _selectedPreset = -1;
 
-    // Preset base frequency and bandwidth per signal type
-    // These get the player in the right ballpark — sliders fine-tune from here
-    private static readonly (float freq, float bandwidth)[] PresetValues = new[]
+    // Bandwidth per signal type (how wide the bandpass should be for each type)
+    private static readonly float[] PresetBandwidths = new[]
     {
-        (0.3f, 0.15f),  // CrewLog
-        (0.5f, 0.08f),  // SensorData
-        (0.7f, 0.10f),  // SystemMessage
-        (0.6f, 0.12f),  // Encrypted
+        0.15f,  // CrewLog — wider (organic, multiple formants)
+        0.08f,  // SensorData — narrow (clean periodic)
+        0.10f,  // SystemMessage — moderate (harmonics)
+        0.12f,  // Encrypted — moderate
     };
 
     public override void _Ready()
@@ -178,23 +177,31 @@ public partial class SignalPuzzle : Control
 
         _selectedPreset = presetIndex;
 
-        // Apply preset: SET the filter values (not add)
-        var (freq, bandwidth) = PresetValues[presetIndex];
-        _data.FilterFrequency = freq;
-        _data.FilterBandwidth = bandwidth;
-        _data.FilterAmplitude = 0.1f; // Light noise floor
-        _data.FilterPhase = 0.5f;
-
-        // Reset sliders to center (they adjust relative to preset)
-        _filterUI.Reset();
-        // Re-select the preset button after reset
-        // (Reset clears selection, so we need to manually keep it)
-
         bool correct = presetIndex == (int)_data.CorrectType;
+        float bandwidth = PresetBandwidths[presetIndex];
+
         if (correct)
+        {
+            // Correct type: center the filter near the actual signal frequency
+            // but with a slight offset so the player still needs to fine-tune
+            _data.FilterFrequency = _data.SignalFrequency + 0.05f;
+            _data.FilterBandwidth = bandwidth;
+            _data.FilterAmplitude = 0.05f;
+            _data.FilterPhase = 0.5f;
             _statusLabel.Text = "Good match! Now adjust the sliders to fine-tune. Watch the clarity percentage.";
+        }
         else
-            _statusLabel.Text = "That doesn't seem right — the waveform isn't responding well. Try a different type.";
+        {
+            // Wrong type: center the filter away from the actual signal
+            // This gives low clarity, telling the player to try another type
+            float wrongFreq = _data.SignalFrequency + 0.25f;
+            if (wrongFreq > 0.85f) wrongFreq = _data.SignalFrequency - 0.25f;
+            _data.FilterFrequency = wrongFreq;
+            _data.FilterBandwidth = bandwidth;
+            _data.FilterAmplitude = 0.05f;
+            _data.FilterPhase = 0.5f;
+            _statusLabel.Text = "That doesn't seem right — clarity is low. Try a different signal type.";
+        }
 
         UpdateDisplay();
         CheckCompletion();
@@ -208,29 +215,26 @@ public partial class SignalPuzzle : Control
 
         if (_selectedPreset >= 0)
         {
-            // Sliders adjust RELATIVE to the preset base values
-            var (baseFreq, baseBandwidth) = PresetValues[_selectedPreset];
+            bool correct = _selectedPreset == (int)_data.CorrectType;
+            float baseFreq = correct
+                ? _data.SignalFrequency + 0.05f  // Near signal, needs fine-tuning
+                : _data.SignalFrequency + 0.25f; // Far from signal
+            if (baseFreq > 0.85f) baseFreq = _data.SignalFrequency - 0.25f;
 
-            // Frequency slider: ±0.2 offset from preset center
-            _data.FilterFrequency = baseFreq + (frequency - 0.5f) * 0.4f;
+            float bandwidth = PresetBandwidths[_selectedPreset];
 
-            // Bandwidth stays at preset value (could add a slider later)
-            _data.FilterBandwidth = baseBandwidth;
-
-            // Amplitude threshold: 0.0 to 0.3 noise floor
+            // Frequency slider: ±0.15 offset from base position
+            _data.FilterFrequency = baseFreq + (frequency - 0.5f) * 0.3f;
+            _data.FilterBandwidth = bandwidth;
             _data.FilterAmplitude = amplitude * 0.3f;
-
-            // Phase: full 0-1 range
             _data.FilterPhase = phase;
         }
         else
         {
-            // No preset selected — raw slider control (less effective)
             _data.FilterFrequency = frequency;
             _data.FilterBandwidth = 0.2f;
             _data.FilterAmplitude = amplitude * 0.3f;
             _data.FilterPhase = phase;
-
             _statusLabel.Text = "Select a signal type preset first for better results.";
         }
 
