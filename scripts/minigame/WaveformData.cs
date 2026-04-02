@@ -59,9 +59,21 @@ public class WaveformData
 
         var rng = new Random(seed);
 
-        // Place the signal at a random frequency band, leaving room at both edges
-        // for harmonics (CrewLog formants reach ~1.8x, SystemMessage harmonics go higher)
-        SignalFrequency = 0.20f + (float)rng.NextDouble() * 0.45f; // [0.20, 0.65]
+        // Each signal type lives in a characteristic frequency range.
+        // This gives the player a learnable pattern:
+        //   CrewLog = low frequencies (left side of display)
+        //   SensorData = mid frequencies (center)
+        //   SystemMessage = high frequencies (right side)
+        //   Encrypted = varies (harder to predict)
+        // Small random offset within each range prevents memorization.
+        SignalFrequency = type switch
+        {
+            SignalType.CrewLog => 0.15f + (float)rng.NextDouble() * 0.10f,       // [0.15, 0.25]
+            SignalType.SensorData => 0.35f + (float)rng.NextDouble() * 0.10f,    // [0.35, 0.45]
+            SignalType.SystemMessage => 0.55f + (float)rng.NextDouble() * 0.10f, // [0.55, 0.65]
+            SignalType.Encrypted => 0.20f + (float)rng.NextDouble() * 0.40f,     // [0.20, 0.60] — unpredictable
+            _ => 0.35f
+        };
         SignalAmplitude = signalStrength;
         SignalPhase = (float)(rng.NextDouble() * 2.0 * Math.PI);
 

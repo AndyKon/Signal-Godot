@@ -258,6 +258,11 @@ public partial class SignalPuzzle : Control
         var filtered = _data.GetFilteredSamples();
         var clarity = _data.GetClarity();
 
+        _display.SetFilterVisualization(
+            _data.FilterFrequency,
+            _data.FilterBandwidth,
+            _data.FilterAmplitude,
+            _data.FilterPhase);
         _display.SetSamples(raw, filtered, clarity);
         UpdateClarityLabel(clarity);
     }

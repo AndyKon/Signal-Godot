@@ -10,15 +10,21 @@ public partial class WaveformDisplay : Control
     private Color _gridColor = new Color(0.1f, 0.15f, 0.2f);
     private Color _waveformColor = new Color(0.2f, 0.8f, 0.4f); // Green oscilloscope look
     private Color _signalColor = new Color(0.9f, 0.3f, 0.2f);   // Red for isolated signal
-
-    // Colors
     private Color _referenceColor = new Color(0.4f, 0.4f, 0.8f, 0.25f); // Dim blue reference
+    private Color _filterBandColor = new Color(0.3f, 0.6f, 0.9f, 0.08f); // Subtle blue highlight
+    private Color _ampLineColor = new Color(0.9f, 0.5f, 0.2f, 0.4f); // Orange threshold line
 
     // Data
     private float[] _samples;
     private float[] _filteredSamples;
     private float[] _referenceSamples;
     private float _clarity;
+
+    // Filter visualization (set by controller)
+    private float _filterFrequency = 0.5f; // 0-1 normalized
+    private float _filterBandwidth = 0.1f;
+    private float _filterAmplitude = 0f;
+    private float _filterPhase = 0.5f;
 
     // Display settings
     private float _verticalScale = 1.0f;
@@ -41,6 +47,19 @@ public partial class WaveformDisplay : Control
     /// <summary>
     /// Update the display with new sample data.
     /// </summary>
+    /// <summary>
+    /// Update the visible filter band position. The player sees this as a highlighted
+    /// column that sweeps across the display as they adjust the frequency slider.
+    /// </summary>
+    public void SetFilterVisualization(float frequency, float bandwidth, float amplitude, float phase)
+    {
+        _filterFrequency = frequency;
+        _filterBandwidth = bandwidth;
+        _filterAmplitude = amplitude;
+        _filterPhase = phase;
+        QueueRedraw();
+    }
+
     public void SetReferenceSamples(float[] reference)
     {
         _referenceSamples = reference;
@@ -87,8 +106,14 @@ public partial class WaveformDisplay : Control
         // --- Grid ---
         DrawGrid(size);
 
+        // --- Filter band visualization ---
+        DrawFilterBand(size);
+
         // --- Waveform ---
         DrawWaveform(size);
+
+        // --- Amplitude threshold line ---
+        DrawAmplitudeThreshold(size);
 
         // --- Clarity indicator ---
         DrawClarityIndicator(size);
@@ -108,6 +133,50 @@ public partial class WaveformDisplay : Control
             // Right
             DrawRect(new Rect2(size.X - borderWidth, 0, borderWidth, size.Y), flashColor);
         }
+    }
+
+    private void DrawFilterBand(Vector2 size)
+    {
+        // Draw a highlighted vertical band showing where the frequency filter is centered.
+        // The player sees this band move as they adjust the frequency slider.
+        // The signal "lives" somewhere on the horizontal axis — the player moves the band to cover it.
+        float centerX = _filterFrequency * size.X;
+        float halfWidth = _filterBandwidth * size.X * 0.5f;
+        float left = Mathf.Max(0, centerX - halfWidth);
+        float right = Mathf.Min(size.X, centerX + halfWidth);
+
+        DrawRect(new Rect2(left, 0, right - left, size.Y), _filterBandColor);
+
+        // Draw band edges as subtle lines
+        Color edgeColor = new Color(_filterBandColor.R, _filterBandColor.G, _filterBandColor.B, 0.3f);
+        DrawLine(new Vector2(left, 0), new Vector2(left, size.Y), edgeColor, 1f);
+        DrawLine(new Vector2(right, 0), new Vector2(right, size.Y), edgeColor, 1f);
+
+        // Draw center line of the filter
+        Color centerColor = new Color(0.3f, 0.6f, 0.9f, 0.4f);
+        DrawLine(new Vector2(centerX, 0), new Vector2(centerX, size.Y), centerColor, 1f);
+    }
+
+    private void DrawAmplitudeThreshold(Vector2 size)
+    {
+        if (_filterAmplitude <= 0.01f) return;
+
+        // Draw horizontal lines showing the amplitude noise floor.
+        // Everything between these lines is "cut" — the player sees what they're filtering out.
+        float centerY = size.Y * 0.5f;
+        float halfHeight = size.Y * 0.5f * _verticalScale;
+        float thresholdPixels = _filterAmplitude * halfHeight;
+
+        float upperY = centerY - thresholdPixels;
+        float lowerY = centerY + thresholdPixels;
+
+        // Draw threshold lines
+        DrawLine(new Vector2(0, upperY), new Vector2(size.X, upperY), _ampLineColor, 1f);
+        DrawLine(new Vector2(0, lowerY), new Vector2(size.X, lowerY), _ampLineColor, 1f);
+
+        // Dim zone between the lines (the "cut" zone)
+        Color cutZone = new Color(0.9f, 0.5f, 0.2f, 0.03f);
+        DrawRect(new Rect2(0, upperY, size.X, lowerY - upperY), cutZone);
     }
 
     private void DrawGrid(Vector2 size)
