@@ -149,6 +149,13 @@ public class DecryptionPuzzle
         }
         _solved = allCorrect;
 
+        // When solved, show truth — NEREUS can't lie about a fully correct answer
+        if (allCorrect)
+        {
+            displayFeedback = (SlotFeedback[])feedback.Clone();
+            liedSlots = new bool[SlotCount];
+        }
+
         var result = new GuessResult
         {
             Guess = (int[])guess.Clone(),
@@ -224,8 +231,8 @@ public class DecryptionPuzzle
             replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed);
 
     public static DecryptionPuzzle CreateSection3(int seed) =>
-        new(slots: 5, values: 8, allowRepeats: true, liesPerRound: 1,
-            replayLieChance: 0.3f, maxReplayLiesPerCycle: 1, seed: seed);
+        new(slots: 4, values: 6, allowRepeats: true, liesPerRound: 1,
+            replayLieChance: 0.15f, maxReplayLiesPerCycle: 1, seed: seed);
 
     public static DecryptionPuzzle CreateSection4(int seed) =>
         new(slots: 5, values: 8, allowRepeats: true, liesPerRound: 1,

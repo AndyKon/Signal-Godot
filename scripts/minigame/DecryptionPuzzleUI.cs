@@ -502,10 +502,10 @@ public partial class DecryptionPuzzleUI : Control
 
             var inner = new ColorRect();
             inner.SetAnchorsPreset(LayoutPreset.FullRect);
-            inner.OffsetLeft   =  2;
-            inner.OffsetTop    =  2;
-            inner.OffsetRight  = -2;
-            inner.OffsetBottom = -2;
+            inner.OffsetLeft   =  5;
+            inner.OffsetTop    =  5;
+            inner.OffsetRight  = -5;
+            inner.OffsetBottom = -5;
             inner.Color = HexTints[guess[i]];
             container.AddChild(inner);
 
