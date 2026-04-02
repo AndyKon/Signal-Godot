@@ -13,6 +13,7 @@ public class DecryptionPuzzle
     public int ValueCount { get; }
     public bool AllowRepeats { get; }
     public int LiesPerRound { get; }
+    public int ValueLiesPerRound { get; }
     public float ReplayLieChance { get; }
     public int MaxReplayLiesPerCycle { get; }
 
@@ -28,11 +29,13 @@ public class DecryptionPuzzle
     public int[] Answer => _solved ? (int[])_answer.Clone() : null; // Only reveal after solved
 
     public DecryptionPuzzle(int slots, int values, bool allowRepeats, int liesPerRound,
-                            float replayLieChance, int maxReplayLiesPerCycle, int seed)
+                            float replayLieChance, int maxReplayLiesPerCycle, int seed,
+                            int valueLiesPerRound = 0)
     {
         SlotCount = slots;
         ValueCount = values;
         AllowRepeats = allowRepeats;
+        ValueLiesPerRound = valueLiesPerRound;
         LiesPerRound = liesPerRound;
         ReplayLieChance = replayLieChance;
         MaxReplayLiesPerCycle = maxReplayLiesPerCycle;
@@ -149,19 +152,49 @@ public class DecryptionPuzzle
         }
         _solved = allCorrect;
 
+        // Apply NEREUS value lies — swap displayed values in guess history
+        var displayGuess = (int[])guess.Clone();
+        var valueLiedSlots = new bool[SlotCount];
+
+        if (ValueLiesPerRound > 0 && !allCorrect)
+        {
+            var candidateSlots2 = new List<int>();
+            for (int i = 0; i < SlotCount; i++) candidateSlots2.Add(i);
+
+            int valueLiesToApply = Math.Min(ValueLiesPerRound, SlotCount);
+            for (int lie = 0; lie < valueLiesToApply; lie++)
+            {
+                if (candidateSlots2.Count == 0) break;
+                int idx = _rng.Next(candidateSlots2.Count);
+                int slot = candidateSlots2[idx];
+                candidateSlots2.RemoveAt(idx);
+
+                // Pick a different value than what was guessed
+                int original = guess[slot];
+                int swapped;
+                do { swapped = _rng.Next(ValueCount); } while (swapped == original);
+                displayGuess[slot] = swapped;
+                valueLiedSlots[slot] = true;
+            }
+        }
+
         // When solved, show truth — NEREUS can't lie about a fully correct answer
         if (allCorrect)
         {
             displayFeedback = (SlotFeedback[])feedback.Clone();
             liedSlots = new bool[SlotCount];
+            displayGuess = (int[])guess.Clone();
+            valueLiedSlots = new bool[SlotCount];
         }
 
         var result = new GuessResult
         {
             Guess = (int[])guess.Clone(),
+            DisplayGuess = displayGuess,
             TrueFeedback = feedback,
             DisplayFeedback = displayFeedback,
             LiedSlots = liedSlots,
+            ValueLiedSlots = valueLiedSlots,
             IsSolution = allCorrect
         };
 
@@ -235,7 +268,7 @@ public class DecryptionPuzzle
             replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed);
 
     public static DecryptionPuzzle CreateSection4(int seed) =>
-        new(slots: 4, values: 6, allowRepeats: true, liesPerRound: 1,
+        new(slots: 5, values: 6, allowRepeats: true, liesPerRound: 1,
             replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed);
 
     public static DecryptionPuzzle CreateSection5Hostile(int seed) =>
@@ -245,6 +278,12 @@ public class DecryptionPuzzle
     public static DecryptionPuzzle CreateSection5Cooperative(int seed) =>
         new(slots: 4, values: 6, allowRepeats: false, liesPerRound: 0,
             replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed);
+
+    /// <summary>S4 variant B: value-swap lie instead of feedback lie. For A/B testing.</summary>
+    public static DecryptionPuzzle CreateSection4ValueLie(int seed) =>
+        new(slots: 4, values: 6, allowRepeats: true, liesPerRound: 0,
+            replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed,
+            valueLiesPerRound: 1);
 }
 
 public enum SlotFeedback
@@ -256,10 +295,12 @@ public enum SlotFeedback
 
 public class GuessResult
 {
-    public int[] Guess;
+    public int[] Guess;                    // What the player actually entered
+    public int[] DisplayGuess;             // What NEREUS shows (may swap values)
     public SlotFeedback[] TrueFeedback;    // What the real answer is
     public SlotFeedback[] DisplayFeedback; // What NEREUS shows (may include lies)
-    public bool[] LiedSlots;               // Which slots NEREUS lied about
+    public bool[] LiedSlots;               // Which slots had feedback lies
+    public bool[] ValueLiedSlots;          // Which slots had value swaps
     public bool IsSolution;
 }
 

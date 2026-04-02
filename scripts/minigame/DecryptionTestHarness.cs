@@ -92,6 +92,7 @@ public partial class DecryptionTestHarness : Control
             case Key.F4: _currentSection = 4; UpdateInfoLabel(); _puzzleUI.StartPuzzle(4); break;
             case Key.F5: _currentSection = 5; UpdateInfoLabel(); _puzzleUI.StartPuzzle(5); break;
             case Key.F6: _currentSection = 6; UpdateInfoLabel(); _puzzleUI.StartPuzzle(6); break;
+            case Key.F7: _currentSection = 7; UpdateInfoLabel(); _puzzleUI.StartPuzzle(7); break;
             case Key.Space: _puzzleUI.StartPuzzle(_currentSection); break;
             case Key.Escape: GetTree().Quit(); break;
             default: return;
@@ -106,12 +107,13 @@ public partial class DecryptionTestHarness : Control
         {
             "", "Sec 1: Pressure Lock (4 slots, 6 vals, no lies)",
             "Sec 2: Crew Quarters (4 slots, 6 vals, repeats)",
-            "Sec 3: Research Lab (5 slots, 8 vals, 1 lie)",
-            "Sec 4: Engineering (5 slots, 8 vals, 1 lie, active replay)",
-            "Sec 5H: Command - Hostile (6 slots, 8 vals, 2 lies)",
-            "Sec 5C: Command - Cooperative (4 slots, 6 vals, no lies)"
+            "Sec 3: Research Lab (4 slots, 6 vals, 1 feedback lie)",
+            "Sec 4: Engineering (5 slots, 6 vals, 1 feedback lie)",
+            "Sec 5H: Command - Hostile (6 slots, 8 vals, 2 lies, replay)",
+            "Sec 5C: Command - Cooperative (4 slots, 6 vals, no lies)",
+            "Sec 4B: Engineering ALT (4 slots, 6 vals, 1 VALUE lie)"
         };
-        _infoLabel.Text = _currentSection <= 6 ? sections[_currentSection] : "Unknown section";
+        _infoLabel.Text = _currentSection <= 7 ? sections[_currentSection] : "Unknown section";
     }
 
     private void OnPuzzleCompleted(int guessCount, float timeSpent)

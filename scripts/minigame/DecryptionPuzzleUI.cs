@@ -166,6 +166,7 @@ public partial class DecryptionPuzzleUI : Control
             4 => DecryptionPuzzle.CreateSection4(seed),
             5 => DecryptionPuzzle.CreateSection5Hostile(seed),
             6 => DecryptionPuzzle.CreateSection5Cooperative(seed),
+            7 => DecryptionPuzzle.CreateSection4ValueLie(seed),
             _ => DecryptionPuzzle.CreateSection1(seed)
         };
 
@@ -493,7 +494,7 @@ public partial class DecryptionPuzzleUI : Control
         if (result == null) return;
 
         // Add new history row (all pending)
-        AddHistoryRow(_puzzle.GuessesMade - 1, result.Guess);
+        AddHistoryRow(_puzzle.GuessesMade - 1, result.DisplayGuess);
 
         // Reset input
         ResetCurrentInput();
