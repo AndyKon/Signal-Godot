@@ -27,19 +27,21 @@ public partial class DecryptionPuzzleUI : Control
     private static readonly Color ColorTermText   = new Color(0.0f,  0.9f,  0.4f);    // neon green
     private static readonly Color ColorTermDim    = new Color(0.0f,  0.45f, 0.2f);    // dim green
 
-    // ── Hex value theme — distinct, saturated, readable on dark bg ───────────
+    // ── Hex value theme — medium tints, dark text readable on them ───────────
     private static readonly string[] HexLabels = { "0a", "3f", "b2", "e7", "1c", "d4", "8f", "5b" };
     private static readonly Color[] HexTints =
     {
-        new Color(0.0f,  0.7f,  1.0f),  // 0a — bright cyan
-        new Color(0.0f,  0.9f,  0.6f),  // 3f — mint
-        new Color(0.2f,  1.0f,  0.2f),  // b2 — neon green
-        new Color(0.8f,  0.9f,  0.0f),  // e7 — yellow-lime
-        new Color(1.0f,  0.6f,  0.0f),  // 1c — orange
-        new Color(0.3f,  0.5f,  1.0f),  // d4 — blue
-        new Color(0.7f,  0.4f,  1.0f),  // 8f — purple
-        new Color(1.0f,  0.3f,  0.7f),  // 5b — hot pink
+        new Color(0.0f,  0.45f, 0.65f), // 0a — cyan
+        new Color(0.0f,  0.55f, 0.4f),  // 3f — teal
+        new Color(0.1f,  0.55f, 0.1f),  // b2 — green
+        new Color(0.55f, 0.55f, 0.0f),  // e7 — olive-yellow
+        new Color(0.65f, 0.35f, 0.0f),  // 1c — orange
+        new Color(0.15f, 0.3f,  0.65f), // d4 — blue
+        new Color(0.4f,  0.2f,  0.6f),  // 8f — purple
+        new Color(0.6f,  0.15f, 0.4f),  // 5b — magenta
     };
+    // Text on hex tints uses black for legibility
+    private static readonly Color ColorHexText = new Color(0.0f, 0.0f, 0.0f);
 
     // ── Feedback colours — vivid, unmistakable against terminal black ─────────
     private static readonly Color ColorCorrect    = new Color(0.0f,  1.0f,  0.4f);    // vivid green
@@ -316,7 +318,7 @@ public partial class DecryptionPuzzleUI : Control
             lbl.HorizontalAlignment = HorizontalAlignment.Center;
             lbl.VerticalAlignment   = VerticalAlignment.Center;
             lbl.AddThemeFontSizeOverride("font_size", 22);
-            lbl.AddThemeColorOverride("font_color", ColorTermText);
+            lbl.AddThemeColorOverride("font_color", ColorHexText);
             container.AddChild(lbl);
 
             var btn = new Button();
@@ -567,7 +569,7 @@ public partial class DecryptionPuzzleUI : Control
             lbl.VerticalAlignment   = VerticalAlignment.Center;
             lbl.Text = HexLabels[guess[i]];
             lbl.AddThemeFontSizeOverride("font_size", 20);
-            lbl.AddThemeColorOverride("font_color", ColorTermText);
+            lbl.AddThemeColorOverride("font_color", ColorHexText);
             container.AddChild(lbl);
 
             slotBgs[i]    = bg;
