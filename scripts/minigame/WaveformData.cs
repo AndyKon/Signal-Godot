@@ -188,83 +188,74 @@ public class WaveformData
         return samples;
     }
 
+    /// <summary>
+    /// Returns samples that visually blend from raw (noisy) to pure signal
+    /// based on the current clarity. This gives intuitive visual feedback —
+    /// as the player tunes better, the waveform morphs into the clean signal.
+    /// </summary>
     public float[] GetFilteredSamples()
     {
+        float clarity = GetClarityInternal();
         float[] raw = GetRawSamples();
         float[] filtered = new float[SampleCount];
 
-        // Bandpass filter via DFT:
-        //   1. Transform to frequency domain
-        //   2. Attenuate bins outside the passband (Gaussian rolloff)
-        //   3. Apply phase rotation (player's phase dial)
-        //   4. Transform back to time domain
-        //   5. Apply amplitude threshold (noise floor)
-
-        // Forward DFT (real input -> complex spectrum)
-        double[] real = new double[SampleCount];
-        double[] imag = new double[SampleCount];
-        DFT(raw, real, imag);
-
-        // Signal generation uses omega = 2*pi*freq*FrequencyScale, so the DFT bin
-        // for a signal at normalised frequency f is approximately f * FrequencyScale.
-        // Both FilterFrequency and SignalFrequency live in the same [0,1] space.
-        double centre = FilterFrequency * FrequencyScale;
-        double halfBand = Math.Max(FilterBandwidth * FrequencyScale * 0.5, 0.001);
-
-        for (int k = 0; k < SampleCount; k++)
+        // Blend: at clarity 0 → show raw noise. At clarity 1 → show pure signal.
+        // Use a smoothed curve so the transition feels natural.
+        float blend = clarity * clarity; // Quadratic ease — accelerates as you get closer
+        for (int i = 0; i < SampleCount; i++)
         {
-            // Distance from this bin to the filter centre, accounting for the
-            // DFT's periodic / mirrored nature (real signal has symmetric spectrum)
-            double dist = Math.Abs(k - centre);
-            dist = Math.Min(dist, Math.Abs(k - SampleCount - centre));  // wrap-around
-            dist = Math.Min(dist, Math.Abs(k + SampleCount - centre));  // wrap-around
-
-            // Gaussian-shaped bandpass
-            double gain = Math.Exp(-(dist * dist) / (2.0 * halfBand * halfBand));
-
-            real[k] *= gain;
-            imag[k] *= gain;
-        }
-
-        // Phase rotation: shift all surviving bins by (FilterPhase - SignalPhase).
-        // When the player's dial matches the signal's true phase, the rotation is
-        // zero and the output aligns perfectly with the pure signal.
-        double phaseShift = FilterPhase;
-        if (Math.Abs(phaseShift) > 1e-9)
-        {
-            double cosP = Math.Cos(phaseShift);
-            double sinP = Math.Sin(phaseShift);
-            for (int k = 0; k < SampleCount; k++)
-            {
-                double r = real[k] * cosP - imag[k] * sinP;
-                double im = real[k] * sinP + imag[k] * cosP;
-                real[k] = r;
-                imag[k] = im;
-            }
-        }
-
-        // Inverse DFT
-        InverseDFT(real, imag, filtered);
-
-        // Amplitude threshold (noise floor): zero out samples below this level
-        if (FilterAmplitude > 0f)
-        {
-            for (int i = 0; i < SampleCount; i++)
-            {
-                if (Math.Abs(filtered[i]) < FilterAmplitude)
-                    filtered[i] = 0f;
-            }
+            filtered[i] = raw[i] * (1f - blend) + _pureSignal[i] * blend;
         }
 
         return filtered;
     }
 
+    /// <summary>
+    /// Returns the pure signal samples (no noise). Used by the display
+    /// to show a dim reference line the player is trying to match.
+    /// </summary>
+    public float[] GetPureSignal()
+    {
+        return (float[])_pureSignal.Clone();
+    }
+
     // --- Clarity ---
 
+    /// <summary>
+    /// Calculates how close the player's filter settings are to the ideal.
+    /// Based on frequency proximity, bandwidth match, and phase alignment.
+    /// Fast — no DFT, just parameter distance.
+    /// </summary>
     public float GetClarity()
     {
-        float[] filtered = GetFilteredSamples();
-        return NormalizedCrossCorrelation(filtered, _pureSignal);
+        return GetClarityInternal();
+    }
+
+    private float GetClarityInternal()
+    {
+        // Frequency match: Gaussian falloff from signal frequency
+        float freqDist = Math.Abs(FilterFrequency - SignalFrequency);
+        float freqMatch = (float)Math.Exp(-freqDist * freqDist / (2.0 * 0.04 * 0.04));
+        // 0.04 sigma means: at distance 0.04, match is ~60%. At 0.1, match is ~4%.
+
+        // Bandwidth match: narrower is better (up to a point), centered on the signal type's spectral radius
+        float idealBandwidth = SpectralRadius(CorrectType) * 2f + 0.04f;
+        float bwDist = Math.Abs(FilterBandwidth - idealBandwidth);
+        float bwMatch = (float)Math.Exp(-bwDist * bwDist / (2.0 * 0.1 * 0.1));
+
+        // Phase match: cosine similarity (0 = opposite, 1 = aligned)
+        float phaseDist = Math.Abs(FilterPhase - (float)(SignalPhase / (2.0 * Math.PI)));
+        // Wrap to [0, 0.5] (phase is periodic)
+        if (phaseDist > 0.5f) phaseDist = 1f - phaseDist;
+        float phaseMatch = 1f - phaseDist * 2f; // Linear: 0 at opposite, 1 at aligned
+
+        // Amplitude threshold: light noise floor helps, too much cuts signal
+        float ampMatch = 1f - Math.Abs(FilterAmplitude - 0.1f) * 3f;
+        ampMatch = Math.Clamp(ampMatch, 0.3f, 1f);
+
+        // Combined clarity: frequency is most important, then phase, then bandwidth
+        float clarity = freqMatch * 0.5f + phaseMatch * 0.25f + bwMatch * 0.15f + ampMatch * 0.1f;
+        return Math.Clamp(clarity, 0f, 1f);
     }
 
     public bool IsComplete(float threshold = 0.85f)

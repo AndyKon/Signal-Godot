@@ -135,11 +135,14 @@ public partial class SignalPuzzle : Control
         _data.FilterAmplitude = 0.0f;
         _data.FilterPhase = 0.5f;
 
+        // Show the reference signal as a dim target line
+        _display.SetReferenceSamples(_data.GetPureSignal());
+
         UpdateDisplay();
         UpdateClarityLabel(0);
 
         _statusLabel.AddThemeColorOverride("font_color", new Color(0.5f, 0.5f, 0.6f));
-        _statusLabel.Text = "Step 1: Look at the waveform shape. Select the signal type you think it is.";
+        _statusLabel.Text = "Match the green waveform to the blue reference. Select a signal type, then tune the sliders.";
 
         GameLog.Event("Minigame", $"Puzzle started: type={type}, difficulty={difficulty}, seed={seed}");
     }

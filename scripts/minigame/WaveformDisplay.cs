@@ -11,9 +11,13 @@ public partial class WaveformDisplay : Control
     private Color _waveformColor = new Color(0.2f, 0.8f, 0.4f); // Green oscilloscope look
     private Color _signalColor = new Color(0.9f, 0.3f, 0.2f);   // Red for isolated signal
 
+    // Colors
+    private Color _referenceColor = new Color(0.4f, 0.4f, 0.8f, 0.25f); // Dim blue reference
+
     // Data
     private float[] _samples;
     private float[] _filteredSamples;
+    private float[] _referenceSamples;
     private float _clarity;
 
     // Display settings
@@ -37,6 +41,12 @@ public partial class WaveformDisplay : Control
     /// <summary>
     /// Update the display with new sample data.
     /// </summary>
+    public void SetReferenceSamples(float[] reference)
+    {
+        _referenceSamples = reference;
+        QueueRedraw();
+    }
+
     public void SetSamples(float[] raw, float[] filtered, float clarity)
     {
         _samples = raw;
@@ -133,20 +143,22 @@ public partial class WaveformDisplay : Control
         if (_samples == null || _samples.Length < 2)
             return;
 
+        // Draw reference signal (dim blue — the target the player is trying to match)
+        if (_referenceSamples != null && _referenceSamples.Length >= 2)
+        {
+            DrawSampleLine(_referenceSamples, size, _referenceColor, 2f);
+        }
+
         bool hasFiltered = _showFiltered && _filteredSamples != null && _filteredSamples.Length >= 2;
 
         if (hasFiltered)
         {
-            // Draw raw samples dim (ghosted behind the filtered signal)
-            Color dimWaveform = new Color(_waveformColor.R, _waveformColor.G, _waveformColor.B, 0.3f);
-            DrawSampleLine(_samples, size, dimWaveform, 1f);
-
-            // Draw filtered samples bright
+            // Draw the filtered/blended waveform (morphs from noisy to clean as clarity increases)
             DrawSampleLine(_filteredSamples, size, _waveformColor, 2f);
         }
         else
         {
-            // No filter applied yet -- draw raw at full brightness
+            // No filter applied yet — draw raw at full brightness
             DrawSampleLine(_samples, size, _waveformColor, 2f);
         }
     }
