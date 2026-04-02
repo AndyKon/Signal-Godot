@@ -14,30 +14,39 @@ public partial class DecryptionPuzzleUI : Control
     [Signal] public delegate void PuzzleCancelledEventHandler();
 
     // ── Layout constants ──────────────────────────────────────────────────────
-    private const int SlotSize = 56;
-    private const int SlotGap = 8;
-    private const int FeedbackDotSize = 12;
+    private const int SlotSize = 60;
+    private const int SlotGap = 10;
+    private const int FeedbackDotSize = 14;
+    private const int TerminalMaxWidth = 800;
+    private const int TerminalPadding = 48;
 
-    // ── Hex value theme ───────────────────────────────────────────────────────
+    // ── Terminal colour palette ───────────────────────────────────────────────
+    private static readonly Color ColorTermBg     = new Color(0.0f,  0.0f,  0.02f);   // near-black
+    private static readonly Color ColorTermPanel  = new Color(0.02f, 0.04f, 0.03f);   // very dark green-black
+    private static readonly Color ColorTermBorder = new Color(0.0f,  0.7f,  0.3f, 0.4f); // dim green border
+    private static readonly Color ColorTermText   = new Color(0.0f,  0.9f,  0.4f);    // neon green
+    private static readonly Color ColorTermDim    = new Color(0.0f,  0.45f, 0.2f);    // dim green
+
+    // ── Hex value theme — green-spectrum with subtle differentiation ──────────
     private static readonly string[] HexLabels = { "0a", "3f", "b2", "e7", "1c", "d4", "8f", "5b" };
     private static readonly Color[] HexTints =
     {
-        new Color(0.10f, 0.20f, 0.55f), // deep blue
-        new Color(0.10f, 0.55f, 0.50f), // teal
-        new Color(0.15f, 0.60f, 0.20f), // green
-        new Color(0.75f, 0.55f, 0.05f), // amber
-        new Color(0.80f, 0.35f, 0.05f), // orange
-        new Color(0.75f, 0.12f, 0.12f), // red
-        new Color(0.45f, 0.15f, 0.70f), // purple
-        new Color(0.75f, 0.10f, 0.55f), // magenta
+        new Color(0.0f,  0.55f, 0.7f),  // 0a — cyan
+        new Color(0.0f,  0.7f,  0.5f),  // 3f — teal
+        new Color(0.0f,  0.8f,  0.3f),  // b2 — green
+        new Color(0.4f,  0.75f, 0.0f),  // e7 — lime
+        new Color(0.7f,  0.6f,  0.0f),  // 1c — amber
+        new Color(0.0f,  0.5f,  0.8f),  // d4 — blue
+        new Color(0.4f,  0.3f,  0.8f),  // 8f — indigo
+        new Color(0.6f,  0.2f,  0.7f),  // 5b — violet
     };
 
-    // ── Feedback colours ──────────────────────────────────────────────────────
-    private static readonly Color ColorCorrect      = new Color(0.2f,  0.8f,  0.3f);
-    private static readonly Color ColorWrongPos     = new Color(0.9f,  0.75f, 0.1f);
-    private static readonly Color ColorNotPresent   = new Color(0.8f,  0.2f,  0.2f);
-    private static readonly Color ColorPending      = new Color(0.15f, 0.18f, 0.22f);
-    private static readonly Color ColorSlotEmpty    = new Color(0.08f, 0.10f, 0.14f);
+    // ── Feedback colours — high contrast against terminal black ───────────────
+    private static readonly Color ColorCorrect    = new Color(0.1f,  1.0f,  0.5f);    // bright green
+    private static readonly Color ColorWrongPos   = new Color(1.0f,  0.7f,  0.0f);    // bright amber
+    private static readonly Color ColorNotPresent = new Color(0.5f,  0.1f,  0.1f);    // dark red
+    private static readonly Color ColorPending    = new Color(0.06f, 0.08f, 0.06f);   // barely visible
+    private static readonly Color ColorSlotEmpty  = new Color(0.04f, 0.06f, 0.04f);   // near-black green
 
     // ── Core state ────────────────────────────────────────────────────────────
     private DecryptionPuzzle _puzzle;
@@ -86,10 +95,9 @@ public partial class DecryptionPuzzleUI : Control
 
     public override void _Ready()
     {
-        // Dark terminal background
         var bg = new ColorRect();
         bg.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        bg.Color = new Color(0.03f, 0.04f, 0.06f);
+        bg.Color = ColorTermBg;
         AddChild(bg);
     }
 
@@ -181,18 +189,48 @@ public partial class DecryptionPuzzleUI : Control
         // Tear down previous UI root (if any) and rebuild from scratch
         _uiRoot?.QueueFree();
 
-        var margin = new MarginContainer();
-        _uiRoot = margin;
-        margin.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        margin.AddThemeConstantOverride("margin_left",   20);
-        margin.AddThemeConstantOverride("margin_right",  20);
-        margin.AddThemeConstantOverride("margin_top",    12);
-        margin.AddThemeConstantOverride("margin_bottom", 12);
-        AddChild(margin);
+        // ── Centering wrapper — terminal panel centered on screen ─────────────
+        var outerMargin = new MarginContainer();
+        _uiRoot = outerMargin;
+        outerMargin.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        outerMargin.AddThemeConstantOverride("margin_top", 24);
+        outerMargin.AddThemeConstantOverride("margin_bottom", 24);
+        outerMargin.AddThemeConstantOverride("margin_left", 0);
+        outerMargin.AddThemeConstantOverride("margin_right", 0);
+        AddChild(outerMargin);
 
+        // Horizontal centering: spacer | terminal | spacer
+        var hCenter = new HBoxContainer();
+        outerMargin.AddChild(hCenter);
+
+        var leftSpacer = new Control();
+        leftSpacer.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        hCenter.AddChild(leftSpacer);
+
+        // ── Terminal panel with green border ───────────────────────────────────
+        var terminalPanel = new PanelContainer();
+        terminalPanel.CustomMinimumSize = new Vector2(TerminalMaxWidth, 0);
+        terminalPanel.SizeFlagsVertical = SizeFlags.ExpandFill;
+        var termStyle = new StyleBoxFlat();
+        termStyle.BgColor = ColorTermPanel;
+        termStyle.BorderColor = ColorTermBorder;
+        termStyle.SetBorderWidthAll(2);
+        termStyle.SetCornerRadiusAll(2);
+        termStyle.ContentMarginLeft   = TerminalPadding;
+        termStyle.ContentMarginRight  = TerminalPadding;
+        termStyle.ContentMarginTop    = 32;
+        termStyle.ContentMarginBottom = 32;
+        terminalPanel.AddThemeStyleboxOverride("panel", termStyle);
+        hCenter.AddChild(terminalPanel);
+
+        var rightSpacer = new Control();
+        rightSpacer.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        hCenter.AddChild(rightSpacer);
+
+        // ── Content inside terminal ───────────────────────────────────────────
         var root = new VBoxContainer();
-        root.AddThemeConstantOverride("separation", 8);
-        margin.AddChild(root);
+        root.AddThemeConstantOverride("separation", 12);
+        terminalPanel.AddChild(root);
 
         // ── 1. Title bar ──────────────────────────────────────────────────────
         var titleBar = new HBoxContainer();
@@ -200,24 +238,26 @@ public partial class DecryptionPuzzleUI : Control
         root.AddChild(titleBar);
 
         _titleLabel = new Label();
-        _titleLabel.Text = $"DECRYPTION TERMINAL — Section {section}";
+        _titleLabel.Text = $"> DECRYPTION TERMINAL // SECTION {section}";
         _titleLabel.AddThemeFontSizeOverride("font_size", 18);
-        _titleLabel.AddThemeColorOverride("font_color", new Color(0.4f, 0.9f, 0.5f));
+        _titleLabel.AddThemeColorOverride("font_color", ColorTermText);
         titleBar.AddChild(_titleLabel);
 
-        var titleSpacer = new Control();
-        titleSpacer.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-        titleBar.AddChild(titleSpacer);
+        var titleSpacer2 = new Control();
+        titleSpacer2.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        titleBar.AddChild(titleSpacer2);
 
         _timerLabel = new Label();
         _timerLabel.Text = "0.0s";
         _timerLabel.AddThemeFontSizeOverride("font_size", 16);
-        _timerLabel.AddThemeColorOverride("font_color", new Color(0.5f, 0.5f, 0.6f));
+        _timerLabel.AddThemeColorOverride("font_color", ColorTermDim);
         titleBar.AddChild(_timerLabel);
 
-        // ── 2. Separator ──────────────────────────────────────────────────────
-        var sep = new HSeparator();
-        root.AddChild(sep);
+        // ── 2. Separator — terminal-style line ────────────────────────────────
+        var sepLine = new ColorRect();
+        sepLine.CustomMinimumSize = new Vector2(0, 1);
+        sepLine.Color = ColorTermBorder;
+        root.AddChild(sepLine);
 
         // ── 3. History scroll ─────────────────────────────────────────────────
         _historyScroll = new ScrollContainer();
@@ -226,7 +266,7 @@ public partial class DecryptionPuzzleUI : Control
         root.AddChild(_historyScroll);
 
         _historyVBox = new VBoxContainer();
-        _historyVBox.AddThemeConstantOverride("separation", 6);
+        _historyVBox.AddThemeConstantOverride("separation", 8);
         _historyVBox.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         _historyScroll.AddChild(_historyVBox);
 
@@ -235,13 +275,15 @@ public partial class DecryptionPuzzleUI : Control
         _statusLabel.HorizontalAlignment = HorizontalAlignment.Center;
         _statusLabel.AutowrapMode = TextServer.AutowrapMode.Word;
         _statusLabel.AddThemeFontSizeOverride("font_size", 14);
-        _statusLabel.AddThemeColorOverride("font_color", new Color(0.5f, 0.55f, 0.65f));
+        _statusLabel.AddThemeColorOverride("font_color", ColorTermDim);
         root.AddChild(_statusLabel);
 
         // ── 5. Current guess input ────────────────────────────────────────────
+        var inputCenter = new CenterContainer();
+        root.AddChild(inputCenter);
         var inputRow = new HBoxContainer();
         inputRow.AddThemeConstantOverride("separation", SlotGap);
-        root.AddChild(inputRow);
+        inputCenter.AddChild(inputRow);
 
         _inputSlotContainers = new Control[_puzzle.SlotCount];
         _inputSlotBgs        = new ColorRect[_puzzle.SlotCount];
@@ -249,22 +291,17 @@ public partial class DecryptionPuzzleUI : Control
 
         for (int i = 0; i < _puzzle.SlotCount; i++)
         {
-            int slotIndex = i; // capture for closure
+            int slotIndex = i;
             var container = new Control();
             container.CustomMinimumSize = new Vector2(SlotSize, SlotSize);
 
-            var slotBg = new ColorRect();
-            slotBg.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-            slotBg.Color = ColorSlotEmpty;
-            container.AddChild(slotBg);
-
+            // Border (terminal green, dim)
             var slotBorder = new ColorRect();
             slotBorder.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-            slotBorder.Color = new Color(0.25f, 0.30f, 0.38f, 1f);
-            // Use a thin panel effect — just set as bg; real border via StyleBoxFlat on a Panel
+            slotBorder.Color = ColorTermBorder;
             container.AddChild(slotBorder);
 
-            // Solid inner fill on top of border
+            // Inner fill
             var slotInner = new ColorRect();
             slotInner.SetAnchorsPreset(LayoutPreset.FullRect);
             slotInner.OffsetLeft   =  2;
@@ -278,11 +315,10 @@ public partial class DecryptionPuzzleUI : Control
             lbl.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
             lbl.HorizontalAlignment = HorizontalAlignment.Center;
             lbl.VerticalAlignment   = VerticalAlignment.Center;
-            lbl.AddThemeFontSizeOverride("font_size", 16);
-            lbl.AddThemeColorOverride("font_color", Colors.White);
+            lbl.AddThemeFontSizeOverride("font_size", 18);
+            lbl.AddThemeColorOverride("font_color", ColorTermText);
             container.AddChild(lbl);
 
-            // Invisible click button
             var btn = new Button();
             btn.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
             btn.Flat = true;
@@ -296,21 +332,40 @@ public partial class DecryptionPuzzleUI : Control
             inputRow.AddChild(container);
         }
 
-        var inputSpacer = new Control();
-        inputSpacer.CustomMinimumSize = new Vector2(8, 0);
-        inputRow.AddChild(inputSpacer);
+        var inputSpacer2 = new Control();
+        inputSpacer2.CustomMinimumSize = new Vector2(16, 0);
+        inputRow.AddChild(inputSpacer2);
 
         _submitButton = new Button();
-        _submitButton.Text = "SUBMIT";
-        _submitButton.CustomMinimumSize = new Vector2(80, SlotSize);
-        _submitButton.AddThemeFontSizeOverride("font_size", 13);
+        _submitButton.Text = "[ SUBMIT ]";
+        _submitButton.CustomMinimumSize = new Vector2(100, SlotSize);
+        _submitButton.AddThemeFontSizeOverride("font_size", 14);
+        _submitButton.AddThemeColorOverride("font_color", ColorTermText);
+        var submitStyle = new StyleBoxFlat();
+        submitStyle.BgColor = ColorTermPanel;
+        submitStyle.BorderColor = ColorTermBorder;
+        submitStyle.SetBorderWidthAll(1);
+        submitStyle.SetCornerRadiusAll(0);
+        _submitButton.AddThemeStyleboxOverride("normal", submitStyle);
+        var submitHover = new StyleBoxFlat();
+        submitHover.BgColor = new Color(0.0f, 0.15f, 0.05f);
+        submitHover.BorderColor = ColorTermText;
+        submitHover.SetBorderWidthAll(1);
+        _submitButton.AddThemeStyleboxOverride("hover", submitHover);
         _submitButton.Pressed += TrySubmit;
         inputRow.AddChild(_submitButton);
 
         // ── 6. Value picker ───────────────────────────────────────────────────
+        var pickerSep = new ColorRect();
+        pickerSep.CustomMinimumSize = new Vector2(0, 1);
+        pickerSep.Color = ColorTermBorder;
+        root.AddChild(pickerSep);
+
+        var pickerCenter = new CenterContainer();
+        root.AddChild(pickerCenter);
         var pickerRow = new HBoxContainer();
-        pickerRow.AddThemeConstantOverride("separation", 6);
-        root.AddChild(pickerRow);
+        pickerRow.AddThemeConstantOverride("separation", 8);
+        pickerCenter.AddChild(pickerRow);
 
         for (int v = 0; v < _puzzle.ValueCount; v++)
         {
@@ -318,34 +373,39 @@ public partial class DecryptionPuzzleUI : Control
             var btn = new Button();
             btn.Text = HexLabels[v];
             btn.CustomMinimumSize = new Vector2(SlotSize, SlotSize);
-            btn.AddThemeFontSizeOverride("font_size", 15);
-            btn.AddThemeColorOverride("font_color", Colors.White);
+            btn.AddThemeFontSizeOverride("font_size", 16);
 
-            // Tinted StyleBoxFlat background
             var style = new StyleBoxFlat();
-            style.BgColor = HexTints[v];
-            style.BorderColor = HexTints[v].Lightened(0.3f);
+            style.BgColor = HexTints[v].Darkened(0.7f);
+            style.BorderColor = HexTints[v].Darkened(0.2f);
             style.SetBorderWidthAll(2);
-            style.SetCornerRadiusAll(4);
+            style.SetCornerRadiusAll(0);
             btn.AddThemeStyleboxOverride("normal", style);
+            btn.AddThemeColorOverride("font_color", HexTints[v].Lightened(0.4f));
 
             var styleHover = (StyleBoxFlat)style.Duplicate();
-            styleHover.BgColor = HexTints[v].Lightened(0.15f);
+            styleHover.BgColor = HexTints[v].Darkened(0.5f);
+            styleHover.BorderColor = HexTints[v];
             btn.AddThemeStyleboxOverride("hover", styleHover);
 
             var stylePressed = (StyleBoxFlat)style.Duplicate();
-            stylePressed.BgColor = HexTints[v].Darkened(0.10f);
+            stylePressed.BgColor = HexTints[v].Darkened(0.3f);
             btn.AddThemeStyleboxOverride("pressed", stylePressed);
 
             btn.Pressed += () => AppendInputValue(valueIndex);
             pickerRow.AddChild(btn);
         }
 
-        // Backspace button
         var bksp = new Button();
         bksp.Text = "⌫";
         bksp.CustomMinimumSize = new Vector2(SlotSize, SlotSize);
-        bksp.AddThemeFontSizeOverride("font_size", 20);
+        bksp.AddThemeFontSizeOverride("font_size", 22);
+        bksp.AddThemeColorOverride("font_color", ColorTermDim);
+        var bkspStyle = new StyleBoxFlat();
+        bkspStyle.BgColor = ColorTermPanel;
+        bkspStyle.BorderColor = ColorTermBorder;
+        bkspStyle.SetBorderWidthAll(1);
+        bksp.AddThemeStyleboxOverride("normal", bkspStyle);
         bksp.Pressed += RemoveLastInputValue;
         pickerRow.AddChild(bksp);
     }
@@ -472,10 +532,10 @@ public partial class DecryptionPuzzleUI : Control
         // Guess number
         var numLabel = new Label();
         numLabel.Text = $"{rowIndex + 1:D2}";
-        numLabel.CustomMinimumSize = new Vector2(28, SlotSize);
+        numLabel.CustomMinimumSize = new Vector2(32, SlotSize);
         numLabel.VerticalAlignment = VerticalAlignment.Center;
-        numLabel.AddThemeFontSizeOverride("font_size", 13);
-        numLabel.AddThemeColorOverride("font_color", new Color(0.4f, 0.4f, 0.5f));
+        numLabel.AddThemeFontSizeOverride("font_size", 14);
+        numLabel.AddThemeColorOverride("font_color", ColorTermDim);
         row.AddChild(numLabel);
 
         // Guess slots
@@ -506,8 +566,8 @@ public partial class DecryptionPuzzleUI : Control
             lbl.HorizontalAlignment = HorizontalAlignment.Center;
             lbl.VerticalAlignment   = VerticalAlignment.Center;
             lbl.Text = HexLabels[guess[i]];
-            lbl.AddThemeFontSizeOverride("font_size", 15);
-            lbl.AddThemeColorOverride("font_color", Colors.White);
+            lbl.AddThemeFontSizeOverride("font_size", 16);
+            lbl.AddThemeColorOverride("font_color", ColorTermText);
             container.AddChild(lbl);
 
             slotBgs[i]    = bg;
@@ -745,7 +805,7 @@ public partial class DecryptionPuzzleUI : Control
             _active = false;
             int guesses = _puzzle.GuessesMade;
             SetStatus($"DECRYPTED in {guesses} guess{(guesses == 1 ? "" : "es")}!");
-            _statusLabel.AddThemeColorOverride("font_color", new Color(0.2f, 0.9f, 0.3f));
+            _statusLabel.AddThemeColorOverride("font_color", ColorTermText);
             EmitSignal(SignalName.PuzzleCompleted, guesses, _elapsed);
         }
         else
