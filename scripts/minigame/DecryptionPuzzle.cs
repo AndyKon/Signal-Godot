@@ -166,6 +166,8 @@ public class DecryptionPuzzle
     /// Prepare replay data for all historical guesses. For each entry, may alter one
     /// feedback slot based on ReplayLieChance and MaxReplayLiesPerCycle — either
     /// fixing a prior lie or introducing a new one.
+    /// Results differ across calls (shared RNG state). Cache the returned array
+    /// if you need to reference the same replay data multiple times.
     /// </summary>
     public ReplayResult[] PrepareReplay()
     {

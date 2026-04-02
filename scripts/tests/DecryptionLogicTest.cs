@@ -223,6 +223,18 @@ public partial class DecryptionLogicTest : Node
         }
         Check("TestReplayLieGeneration: each replay DisplayFeedback has SlotCount entries", allCorrectLength);
         Check("TestReplayLieGeneration: each replay AlteredSlots has SlotCount entries", allAlteredSlotsCorrectLength);
+
+        // Verify MaxReplayLiesPerCycle cap is respected
+        int alteredEntries = 0;
+        for (int i = 0; i < replay.Length; i++)
+        {
+            for (int j = 0; j < replay[i].AlteredSlots.Length; j++)
+            {
+                if (replay[i].AlteredSlots[j]) { alteredEntries++; break; }
+            }
+        }
+        Check("TestReplayLieGeneration: altered entries <= MaxReplayLiesPerCycle",
+            alteredEntries <= puzzle.MaxReplayLiesPerCycle);
     }
 
     private void TestSolvedState()
