@@ -41,6 +41,7 @@ public partial class DecryptionPuzzleUI : Control
 
     // ── Core state ────────────────────────────────────────────────────────────
     private DecryptionPuzzle _puzzle;
+    private int _section;
     private bool _active;
     private float _elapsed;
 
@@ -158,6 +159,7 @@ public partial class DecryptionPuzzleUI : Control
             _ => DecryptionPuzzle.CreateSection1(seed)
         };
 
+        _section = section;
         _elapsed = 0f;
         _active = true;
         _animState = AnimState.Idle;
@@ -598,17 +600,73 @@ public partial class DecryptionPuzzleUI : Control
     };
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Visual tell effect (placeholder for Task 3)
+    // Visual tells for NEREUS lies — section-aware
     // ─────────────────────────────────────────────────────────────────────────
 
     private void PlayTellEffect(ColorRect bg, Control container, SlotFeedback displayFeedback)
     {
+        switch (_section)
+        {
+            case 3: PlayFlickerTell(bg, displayFeedback); break;
+            case 4: PlayBriefTruthTell(bg, displayFeedback); break;
+            case 5: PlayCompositeTell(bg, container, displayFeedback); break;
+        }
+    }
+
+    /// <summary>Section 3: rapid flicker — glimpse of wrong color before settling.</summary>
+    private void PlayFlickerTell(ColorRect bg, SlotFeedback displayFeedback)
+    {
+        var lieColor = FeedbackColor(displayFeedback).Darkened(0.5f);
+        var flashColor = Colors.White.Lerp(lieColor, 0.3f);
         var tween = CreateTween();
-        var originalColor = bg.Color;
-        tween.TweenProperty(bg, "color", Colors.White, 0.05f);
-        tween.TweenProperty(bg, "color", originalColor, 0.05f);
-        tween.TweenProperty(bg, "color", Colors.White, 0.05f);
-        tween.TweenProperty(bg, "color", originalColor, 0.05f);
+        tween.TweenProperty(bg, "color", flashColor, 0.04f);
+        tween.TweenProperty(bg, "color", lieColor, 0.04f);
+        tween.TweenProperty(bg, "color", flashColor, 0.04f);
+        tween.TweenProperty(bg, "color", lieColor, 0.04f);
+        tween.TweenProperty(bg, "color", flashColor, 0.04f);
+        tween.TweenProperty(bg, "color", lieColor, 0.06f);
+    }
+
+    /// <summary>Section 4: briefly shows contrasting hint color then transitions to lie.</summary>
+    private void PlayBriefTruthTell(ColorRect bg, SlotFeedback displayFeedback)
+    {
+        var lieColor = FeedbackColor(displayFeedback).Darkened(0.5f);
+        Color hintColor = displayFeedback switch
+        {
+            SlotFeedback.Correct      => ColorNotPresent.Darkened(0.3f),
+            SlotFeedback.WrongPosition => ColorCorrect.Darkened(0.3f),
+            SlotFeedback.NotPresent   => ColorWrongPos.Darkened(0.3f),
+            _ => Colors.White
+        };
+        var tween = CreateTween();
+        tween.TweenProperty(bg, "color", hintColor, 0.05f);
+        tween.TweenInterval(0.15f);
+        tween.TweenProperty(bg, "color", lieColor, 0.12f);
+    }
+
+    /// <summary>Section 5: composite flicker + position shake.</summary>
+    private void PlayCompositeTell(ColorRect bg, Control container, SlotFeedback displayFeedback)
+    {
+        var lieColor = FeedbackColor(displayFeedback).Darkened(0.5f);
+        Color hintColor = displayFeedback switch
+        {
+            SlotFeedback.Correct      => ColorNotPresent.Darkened(0.3f),
+            SlotFeedback.WrongPosition => ColorCorrect.Darkened(0.3f),
+            SlotFeedback.NotPresent   => ColorWrongPos.Darkened(0.3f),
+            _ => Colors.White
+        };
+        var colorTween = CreateTween();
+        colorTween.TweenProperty(bg, "color", hintColor, 0.04f);
+        colorTween.TweenProperty(bg, "color", lieColor, 0.03f);
+        colorTween.TweenProperty(bg, "color", hintColor, 0.04f);
+        colorTween.TweenProperty(bg, "color", lieColor, 0.1f);
+
+        var originalPos = container.Position;
+        var shakeTween = CreateTween();
+        shakeTween.TweenProperty(container, "position", originalPos + new Vector2(3, 0), 0.03f);
+        shakeTween.TweenProperty(container, "position", originalPos + new Vector2(-3, 0), 0.03f);
+        shakeTween.TweenProperty(container, "position", originalPos + new Vector2(2, 0), 0.03f);
+        shakeTween.TweenProperty(container, "position", originalPos, 0.03f);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
