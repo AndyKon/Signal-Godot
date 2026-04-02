@@ -14,11 +14,11 @@ public partial class DecryptionPuzzleUI : Control
     [Signal] public delegate void PuzzleCancelledEventHandler();
 
     // ── Layout constants ──────────────────────────────────────────────────────
-    private const int SlotSize = 60;
-    private const int SlotGap = 10;
-    private const int FeedbackDotSize = 14;
-    private const int TerminalMaxWidth = 960;
-    private const int TerminalPadding = 56;
+    private const int SlotSize = 76;
+    private const int SlotGap = 12;
+    private const int FeedbackDotSize = 20;
+    private const int TerminalMaxWidth = 1100;
+    private const int TerminalPadding = 48;
 
     // ── Terminal colour palette ───────────────────────────────────────────────
     private static readonly Color ColorTermBg     = new Color(0.0f,  0.0f,  0.02f);   // near-black
@@ -41,10 +41,10 @@ public partial class DecryptionPuzzleUI : Control
         new Color(1.0f,  0.3f,  0.7f),  // 5b — hot pink
     };
 
-    // ── Feedback colours — high contrast against terminal black ───────────────
-    private static readonly Color ColorCorrect    = new Color(0.1f,  1.0f,  0.5f);    // bright green
-    private static readonly Color ColorWrongPos   = new Color(1.0f,  0.7f,  0.0f);    // bright amber
-    private static readonly Color ColorNotPresent = new Color(0.5f,  0.1f,  0.1f);    // dark red
+    // ── Feedback colours — vivid, unmistakable against terminal black ─────────
+    private static readonly Color ColorCorrect    = new Color(0.0f,  1.0f,  0.4f);    // vivid green
+    private static readonly Color ColorWrongPos   = new Color(1.0f,  0.8f,  0.0f);    // vivid yellow
+    private static readonly Color ColorNotPresent = new Color(0.9f,  0.15f, 0.1f);    // vivid red
     private static readonly Color ColorPending    = new Color(0.06f, 0.08f, 0.06f);   // barely visible
     private static readonly Color ColorSlotEmpty  = new Color(0.04f, 0.06f, 0.04f);   // near-black green
 
@@ -239,7 +239,7 @@ public partial class DecryptionPuzzleUI : Control
 
         _titleLabel = new Label();
         _titleLabel.Text = $"> DECRYPTION TERMINAL // SECTION {section}";
-        _titleLabel.AddThemeFontSizeOverride("font_size", 18);
+        _titleLabel.AddThemeFontSizeOverride("font_size", 22);
         _titleLabel.AddThemeColorOverride("font_color", ColorTermText);
         titleBar.AddChild(_titleLabel);
 
@@ -249,7 +249,7 @@ public partial class DecryptionPuzzleUI : Control
 
         _timerLabel = new Label();
         _timerLabel.Text = "0.0s";
-        _timerLabel.AddThemeFontSizeOverride("font_size", 16);
+        _timerLabel.AddThemeFontSizeOverride("font_size", 20);
         _timerLabel.AddThemeColorOverride("font_color", ColorTermDim);
         titleBar.AddChild(_timerLabel);
 
@@ -274,7 +274,7 @@ public partial class DecryptionPuzzleUI : Control
         _statusLabel = new Label();
         _statusLabel.HorizontalAlignment = HorizontalAlignment.Center;
         _statusLabel.AutowrapMode = TextServer.AutowrapMode.Word;
-        _statusLabel.AddThemeFontSizeOverride("font_size", 14);
+        _statusLabel.AddThemeFontSizeOverride("font_size", 18);
         _statusLabel.AddThemeColorOverride("font_color", ColorTermDim);
         root.AddChild(_statusLabel);
 
@@ -315,7 +315,7 @@ public partial class DecryptionPuzzleUI : Control
             lbl.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
             lbl.HorizontalAlignment = HorizontalAlignment.Center;
             lbl.VerticalAlignment   = VerticalAlignment.Center;
-            lbl.AddThemeFontSizeOverride("font_size", 18);
+            lbl.AddThemeFontSizeOverride("font_size", 22);
             lbl.AddThemeColorOverride("font_color", ColorTermText);
             container.AddChild(lbl);
 
@@ -338,8 +338,8 @@ public partial class DecryptionPuzzleUI : Control
 
         _submitButton = new Button();
         _submitButton.Text = "[ SUBMIT ]";
-        _submitButton.CustomMinimumSize = new Vector2(100, SlotSize);
-        _submitButton.AddThemeFontSizeOverride("font_size", 14);
+        _submitButton.CustomMinimumSize = new Vector2(120, SlotSize);
+        _submitButton.AddThemeFontSizeOverride("font_size", 18);
         _submitButton.AddThemeColorOverride("font_color", ColorTermText);
         var submitStyle = new StyleBoxFlat();
         submitStyle.BgColor = ColorTermPanel;
@@ -373,7 +373,7 @@ public partial class DecryptionPuzzleUI : Control
             var btn = new Button();
             btn.Text = HexLabels[v];
             btn.CustomMinimumSize = new Vector2(SlotSize, SlotSize);
-            btn.AddThemeFontSizeOverride("font_size", 16);
+            btn.AddThemeFontSizeOverride("font_size", 20);
 
             var style = new StyleBoxFlat();
             style.BgColor = HexTints[v].Darkened(0.7f);
@@ -399,7 +399,7 @@ public partial class DecryptionPuzzleUI : Control
         var bksp = new Button();
         bksp.Text = "⌫";
         bksp.CustomMinimumSize = new Vector2(SlotSize, SlotSize);
-        bksp.AddThemeFontSizeOverride("font_size", 22);
+        bksp.AddThemeFontSizeOverride("font_size", 26);
         bksp.AddThemeColorOverride("font_color", ColorTermDim);
         var bkspStyle = new StyleBoxFlat();
         bkspStyle.BgColor = ColorTermPanel;
@@ -532,9 +532,9 @@ public partial class DecryptionPuzzleUI : Control
         // Guess number
         var numLabel = new Label();
         numLabel.Text = $"{rowIndex + 1:D2}";
-        numLabel.CustomMinimumSize = new Vector2(32, SlotSize);
+        numLabel.CustomMinimumSize = new Vector2(40, SlotSize);
         numLabel.VerticalAlignment = VerticalAlignment.Center;
-        numLabel.AddThemeFontSizeOverride("font_size", 14);
+        numLabel.AddThemeFontSizeOverride("font_size", 18);
         numLabel.AddThemeColorOverride("font_color", ColorTermDim);
         row.AddChild(numLabel);
 
@@ -554,10 +554,10 @@ public partial class DecryptionPuzzleUI : Control
 
             var inner = new ColorRect();
             inner.SetAnchorsPreset(LayoutPreset.FullRect);
-            inner.OffsetLeft   =  5;
-            inner.OffsetTop    =  5;
-            inner.OffsetRight  = -5;
-            inner.OffsetBottom = -5;
+            inner.OffsetLeft   =  6;
+            inner.OffsetTop    =  6;
+            inner.OffsetRight  = -6;
+            inner.OffsetBottom = -6;
             inner.Color = HexTints[guess[i]];
             container.AddChild(inner);
 
@@ -566,7 +566,7 @@ public partial class DecryptionPuzzleUI : Control
             lbl.HorizontalAlignment = HorizontalAlignment.Center;
             lbl.VerticalAlignment   = VerticalAlignment.Center;
             lbl.Text = HexLabels[guess[i]];
-            lbl.AddThemeFontSizeOverride("font_size", 16);
+            lbl.AddThemeFontSizeOverride("font_size", 20);
             lbl.AddThemeColorOverride("font_color", ColorTermText);
             container.AddChild(lbl);
 
