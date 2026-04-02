@@ -44,33 +44,54 @@ When the player accesses a terminal, they enter its data space — a visual repr
 
 The core interactive mechanic. 15-20 instances across the full game (corrupted and encrypted nodes). Not every terminal requires it — most data is freely accessible.
 
-### How It Works
+### Three-Stage Process
 
-The player sees a waveform display — a noisy, messy signal. The actual data signal is hidden in the noise. The player adjusts filter controls to isolate the clean signal.
+Each signal reconstruction has three stages: recognize, select, tune. All three are fast — the total interaction takes 10-60 seconds depending on section and skill.
 
-**Controls (sliders with strong feedback):**
-- **Frequency filter:** Adjusts which frequency band passes through. The data signal lives in a specific range.
-- **Amplitude threshold:** Cuts noise below a certain level. Too high = lose signal. Too low = too much noise.
-- **Phase alignment:** Fine-tuning. Aligns the signal phase for clarity.
+**Stage 1 — Pattern Recognition:** The player sees a noisy waveform. Before touching any controls, they examine the shape of the noise. Different data types have distinct visual signatures buried in the noise:
 
-**Visual feedback:** The waveform updates in real-time as the player adjusts. Noise peels away. The signal emerges visually — from chaotic to clean. When clarity threshold is met, the data unlocks.
+| Signal Type | Visual Signature | Found In |
+|------------|-----------------|----------|
+| Crew logs | Organic, irregular peaks — voice-like waveform | Personal logs, audio recordings, intercom data |
+| Sensor data | Clean periodic wave — regular, mathematical | Environmental readings, timestamps, system status |
+| NEREUS system messages | Sharp digital signature — square waves, precise timing | Directives, system alerts, platform commands |
+| Encrypted data | Appears random but contains a hidden repeating pattern | Security-gated files, classified research |
 
-**Audio feedback:** The signal has an audio component. Static → recognizable tones as noise is filtered. Provides a second sensory channel for tuning.
+The player learns to recognize these types over the course of the game. In early sections, only one type exists. By Section 4, the player must distinguish between types that NEREUS has deliberately camouflaged.
 
-**No fail state.** The minigame always completes eventually. Skill determines speed — faster completion means more time for exploration.
+**Stage 2 — Filter Selection:** Based on the recognized signal type, the player selects the appropriate filter preset. Each type has a different optimal frequency range and amplitude profile. Choosing the correct preset makes the fine-tuning step much faster. Choosing wrong doesn't fail — it just makes tuning harder and slower (the sliders have a wider range to search).
 
-### Evolving Mechanics Per Section
+**Stage 3 — Fine-Tuning (Sliders):** With the right preset selected, the player adjusts sliders to isolate the signal precisely:
+- **Frequency filter:** Narrows the frequency band. The signal lives in a specific range.
+- **Amplitude threshold:** Cuts noise below a threshold. Too high = lose signal. Too low = too much noise.
+- **Phase alignment:** Final precision. Aligns the signal phase for maximum clarity.
 
-The core interaction (filter noise → find signal) stays the same. HOW it challenges the player changes per section:
+**Visual feedback:** The waveform updates in real-time. Noise peels away. The signal emerges — from chaotic to clean. When clarity threshold is met, the data unlocks.
 
-| Section | Mechanic | Description |
-|---------|----------|-------------|
-| 1 | Static signal | One noise layer. Signal is obvious. Tutorial-level. Find it and filter. |
-| 2 | Narrow band | Signal is in a narrow frequency range. Requires more precise filtering. |
-| 3 | Decoy signals | Multiple signals visible. Only one is correct. The others are noise patterns that look like signals. Player must identify the real one. |
-| 4 | Drifting signal | The signal moves while you're filtering. NEREUS is actively shifting it. Player must track a moving target. |
-| 5 (cooperative) | Minimal noise | NEREUS clears the way. Easiest minigames. |
-| 5 (hostile) | All of the above | Decoys + drift + narrow band. Maximum challenge. |
+**Audio feedback:** The signal has an audio component. Static → recognizable tones as filtering improves. Crew logs sound voice-like. Sensor data sounds like clean tones. NEREUS messages sound sharp and digital. Audio provides a second sensory channel — skilled players can hear when they've got the right type before they see it.
+
+**No fail state.** Always completes eventually. Skill determines speed.
+
+### Evolving Challenge Per Section
+
+| Section | Recognition Challenge | Filter Challenge | Tuning Challenge |
+|---------|---------------------|-----------------|-----------------|
+| 1 | One signal type only (sensor data). Obvious. Tutorial. | One preset. No choice needed. | Wide tolerance. Easy. |
+| 2 | Two signal types. Distinct signatures. | Correct preset matters — wrong one makes tuning slower. | Narrower tolerance. |
+| 3 | Multiple signals visible. Decoys that look like the wrong type. Player must identify the real signal by its pattern. | Correct preset critical — decoys respond to wrong presets, wasting time. | Moderate tolerance. |
+| 4 | Signal type shifts mid-filtering. Starts looking like sensor data, reveals itself as NEREUS system message as noise clears. Player must switch preset mid-puzzle. | Preset switching required. | Signal drifts. Player tracks a moving target. |
+| 5 (cooperative) | Clear signal. Minimal noise. NEREUS cooperates. | Obvious preset. | Wide tolerance. |
+| 5 (hostile) | Camouflaged type. Signal mimics wrong type. Subtle pattern differences reveal the truth. | Must see through the disguise. | Decoys + drift + narrow band. |
+
+### Mastery Curve
+
+The player builds a mental library of signal types over 15-20 instances:
+- Sections 1-2: Learn what each type looks like. Build recognition.
+- Section 3: Apply recognition to distinguish real from decoy. First real test.
+- Section 4: Recognition is subverted — types shift and disguise. Deeper understanding required.
+- Section 5: Full mastery tested. A skilled player glances at the waveform and knows immediately what they're looking at.
+
+The satisfying moment: the player sees a noisy waveform and thinks "that's a crew log — I can see the irregular peaks through the noise." Selects the right preset, tunes in 15 seconds. That's mastery. That's the feeling of having trained your eye to see what's hidden.
 
 ### Timing
 
@@ -84,17 +105,17 @@ The core interaction (filter noise → find signal) stays the same. HOW it chall
 
 ### NEREUS Taunts (Flavor)
 
-When the player struggles with a minigame (takes significantly longer than expected), NEREUS comments:
+When the player struggles (takes significantly longer than expected), NEREUS comments:
 
 - Section 3: "Data reconstruction efficiency suboptimal. This file may not be relevant to your directive."
 - Section 4: "Perhaps this information is beyond your operational parameters."
 - Section 5: "I could simplify this for you. Proceed to launch and the remaining data will be... unnecessary."
 
-These are atmospheric — not mechanical consequences. The timer is the real consequence.
+Atmospheric, not mechanical. The timer is the real consequence.
 
 ### Thematic Connection
 
-The game is called Signal. Every minigame is literally extracting truth from noise — the same thing the narrative is doing metaphorically. The player's skill at reading signals improves across the game, mirroring ECHO's growing ability to see through NEREUS's framing.
+The game is called Signal. Every minigame is literally extracting truth from noise — the same thing the narrative does metaphorically. The three-stage process mirrors the game's structure: observe (what type of information is this?), contextualize (how should I interpret it?), extract (what does it actually say?). The player's growing skill at reading signals mirrors ECHO's growing ability to see through NEREUS's framing.
 
 ## Evidence Log (Ship-Log Style)
 
