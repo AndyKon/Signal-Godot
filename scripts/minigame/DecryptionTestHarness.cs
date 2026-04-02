@@ -60,8 +60,19 @@ public partial class DecryptionTestHarness : Control
         hints.Text = "Section: F1=PressureLock F2=CrewQuarters F3=Research(lies) F4=Engineering F5=Command(hostile) F6=Command(coop) | Space=New | Esc=Quit";
         root.AddChild(hints);
 
+        // Check for --section N command line arg
+        var args = OS.GetCmdlineUserArgs();
+        for (int i = 0; i < args.Length - 1; i++)
+        {
+            if (args[i] == "--section" && int.TryParse(args[i + 1], out int sec) && sec >= 1 && sec <= 6)
+            {
+                _currentSection = sec;
+                UpdateInfoLabel();
+            }
+        }
+
         CallDeferred(MethodName.StartInitialPuzzle);
-        GameLog.Event("Test", "Decryption test harness loaded");
+        GameLog.Event("Test", $"Decryption test harness loaded (section {_currentSection})");
     }
 
     private void StartInitialPuzzle()

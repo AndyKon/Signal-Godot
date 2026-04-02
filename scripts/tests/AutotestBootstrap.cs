@@ -21,6 +21,14 @@ public partial class AutotestBootstrap : Node
                 Core.GameLog.Event("Test", "AutoPlaytest enabled via --autotest flag");
                 return;
             }
+
+            if (arg == "--decryption-scenarios")
+            {
+                var runner = new DecryptionScenarioRunner();
+                GetTree().Root.CallDeferred("add_child", runner);
+                Core.GameLog.Event("Test", "Decryption scenario runner enabled");
+                return;
+            }
         }
     }
 }
