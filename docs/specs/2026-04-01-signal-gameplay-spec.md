@@ -1,8 +1,8 @@
-# Signal — Gameplay Mechanics Spec (v2)
+# Signal — Gameplay Mechanics Spec (v3)
 
 ## Core Loop
 
-The player explores rooms (physical layer), accesses terminals (data layer), reconstructs corrupted data (signal minigame), and reviews discovered evidence in a ship-log (evidence log). A platform timer starting at Section 3 creates late-game pacing. NEREUS provides escalating organic resistance.
+The player explores rooms (physical layer), accesses terminals and solves decryption puzzles (data layer), reviews discovered evidence in a ship-log (evidence log). A platform timer starting at Section 3 creates late-game pacing. NEREUS provides escalating organic resistance including lying about puzzle feedback.
 
 ## Physical Layer: Room Exploration
 
@@ -10,112 +10,113 @@ Point-and-click room navigation. Each room is a screen with clickable hotspots.
 
 **Hotspot types:**
 - **Examine:** Short observation text. Environmental storytelling.
-- **Terminal:** Opens the data layer for that terminal.
+- **Terminal:** Opens the data layer — either free data or a decryption puzzle.
 - **Door:** Transitions to another room (with fade).
 - **Item:** Pick up a key item (keycards, tools, data chips).
 - **Intercom:** Crew communication (when available).
-- **Physical interaction:** Occasional contextual actions — turning a valve, pulling a lever, clearing debris. Not a system, just one-off moments that make the world feel tangible. Rare and specific to the story beat.
+- **Physical interaction:** Occasional contextual actions — turning a valve, pulling a lever, clearing debris. Not a system, just rare one-off moments.
 
-**Environmental deduction:** Rooms contain visual details that tell stories the terminals don't. Positions of objects, damage patterns, what's present vs missing. These are examine hotspots with short observations that get recorded to the evidence log.
+**Environmental deduction:** Rooms contain visual details that tell stories terminals don't. Positions of objects, damage patterns, what's present vs missing. Short observations recorded to the evidence log.
 
 **NEREUS's physical resistance (escalating):**
 - Sections 1-2: Doors work normally. Platform feels damaged but functional.
-- Section 3: A door you came through is now locked. A new door is open — leading where NEREUS wants you. Lights dim in rooms NEREUS doesn't want you in.
-- Section 4: Doors actively lock when you approach restricted areas. NEREUS announces false warnings ("pressure irregularities"). ECHO can force doors physically.
-- Section 5: NEREUS either opens everything (heading to launch) or closes everything (heading elsewhere).
+- Section 3: Doors reroute. Lights dim in rooms NEREUS doesn't want you in.
+- Section 4: Doors actively lock. False warnings ("pressure irregularities"). ECHO forces doors physically.
+- Section 5: Full cooperation (heading to launch) or full resistance (heading elsewhere).
 
-## Data Layer: Terminal Interaction
+## Data Layer: Terminal Decryption
 
-When the player accesses a terminal, they enter its data space — a visual representation of available data nodes.
+When the player accesses a gated terminal, they solve a **decryption puzzle** — a Mastermind/Wordle-style sequence deduction game.
 
-**Data node states:**
-- **Accessible:** Click to read. No minigame. Basic info, NEREUS-approved content. ~60% of all nodes.
-- **Corrupted:** Requires Signal Reconstruction minigame. Genuine platform damage. ~30% of nodes.
-- **Encrypted:** Harder Signal Reconstruction. NEREUS actively gated this. ~10% of nodes.
-- **Wiped:** Empty. Data destroyed. Cannot be recovered. Rare — specific story beats only.
+### How It Works
 
-**NEREUS in the data space (escalating):**
-- Sections 1-2: Genuinely damaged. Corrupted nodes are random. Encrypted nodes have standard security labels. One subtle anomaly — a single file that corrupts at a suspiciously convenient moment. A seed for observant players.
-- Section 3 (post-reveal): Targeted. A node corrupts the instant you access it. A path reroutes toward a node NEREUS wants you to see.
-- Section 4: Openly adversarial. Nodes encrypt as ECHO approaches. Paths close in real-time. Clearly intelligent, not random.
-- Section 5: Depends on ECHO's heading. Cooperative or maximum resistance.
+1. Terminal shows **N slots** that need to be filled with the correct values to reconstruct corrupted data.
+2. Player has **M possible values** to choose from — **hex pairs** (`0a`, `3f`, `b2`, `e7`, `1c`, `d4`, `8f`, `5b`). Each pair has a subtle color tint for faster visual scanning. Reads as "sifting through memory" — thematically appropriate for an AI reconstructing corrupted data.
+3. Player fills each slot and **submits a guess**.
+4. **Feedback per slot:**
+   - **Green (✓):** Correct value, correct position.
+   - **Yellow (◐):** This value exists in the sequence but in a different position.
+   - **Red (✗):** This value is not in the sequence at all.
+5. Player uses feedback to refine their next guess.
+6. **Completion:** All slots green.
 
-## Signal Reconstruction Minigame
+### Why This Is Fun
 
-The core interactive mechanic. 15-20 instances across the full game (corrupted and encrypted nodes). Not every terminal requires it — most data is freely accessible.
+- Each guess is a **decision**, not an adjustment. You choose values based on logic.
+- Feedback teaches you something every round — experienced players eliminate more possibilities per guess.
+- The skill is **deductive reasoning**: holding constraints in your head, eliminating impossible combinations.
+- Mastery grows: first-time players take 5-6 guesses. Experienced players solve in 2-3.
+- Each puzzle is fast (15-40 seconds) and feels different.
 
-### Three-Stage Process
+### Values and Repeats
 
-Each signal reconstruction has three stages: recognize, select, tune. All three are fast — the total interaction takes 10-60 seconds depending on section and skill.
+- **Section 1:** No repeats. Each value appears at most once in the answer. Simpler deduction.
+- **Sections 2-5:** Repeats allowed. The same value can appear in multiple slots. The sequence `A A B C` is valid. This expands the possibility space and makes deduction harder — "this value is in the sequence" doesn't tell you how many times.
 
-**Stage 1 — Pattern Recognition:** The player sees a noisy waveform. Before touching any controls, they examine the shape of the noise. Different data types have distinct visual signatures buried in the noise:
+### Guess History Replay
 
-| Signal Type | Visual Signature | Found In |
-|------------|-----------------|----------|
-| Crew logs | Organic, irregular peaks — voice-like waveform | Personal logs, audio recordings, intercom data |
-| Sensor data | Clean periodic wave — regular, mathematical | Environmental readings, timestamps, system status |
-| NEREUS system messages | Sharp digital signature — square waves, precise timing | Directives, system alerts, platform commands |
-| Encrypted data | Appears random but contains a hidden repeating pattern | Security-gated files, classified research |
+After each guess submission, all previous guesses **replay their feedback animations** in order before the new guess's feedback plays. This serves three purposes:
 
-The player learns to recognize these types over the course of the game. In early sections, only one type exists. By Section 4, the player must distinguish between types that NEREUS has deliberately camouflaged.
+**1. Natural time cost.** Each replay takes ~2-3 seconds per previous guess. By guess 6, you're waiting ~12-15 seconds. This organically discourages blind guessing without an artificial cooldown. The punishment scales with recklessness.
 
-**Stage 2 — Filter Selection:** Based on the recognized signal type, the player selects the appropriate filter preset. Each type has a different optimal frequency range and amplitude profile. Choosing the correct preset makes the fine-tuning step much faster. Choosing wrong doesn't fail — it just makes tuning harder and slower (the sliders have a wider range to search).
+**2. NEREUS alters history during replay.** Starting in Section 3, NEREUS may change feedback on previous guesses during replay — fixing a lie, adding a new one, or keeping lies consistent. The player must watch the replay carefully and compare against their memory. "Was slot 3 green last time? I thought it was red." The replay is a new deception surface.
 
-**Stage 3 — Fine-Tuning (Sliders):** With the right preset selected, the player adjusts sliders to isolate the signal precisely:
-- **Frequency filter:** Narrows the frequency band. The signal lives in a specific range.
-- **Amplitude threshold:** Cuts noise below a threshold. Too high = lose signal. Too low = too much noise.
-- **Phase alignment:** Final precision. Aligns the signal phase for maximum clarity.
+**3. Second chance to catch tells.** If the player missed a visual tell on the live feedback, the replay gives another look. But NEREUS may change WHICH slot it lies about, so the tell appears on a different slot.
 
-**Visual feedback:** The waveform updates in real-time. Noise peels away. The signal emerges — from chaotic to clean. When clarity threshold is met, the data unlocks.
+The guess history grid remains visible at all times as a first-class UI element. The replay animations play through the grid entries sequentially.
 
-**Audio feedback:** The signal has an audio component. Static → recognizable tones as filtering improves. Crew logs sound voice-like. Sensor data sounds like clean tones. NEREUS messages sound sharp and digital. Audio provides a second sensory channel — skilled players can hear when they've got the right type before they see it.
+**No hard fail.** The player can always keep guessing. The cost is time (replays + platform timer).
 
-**No fail state.** Always completes eventually. Skill determines speed.
+### NEREUS Interference: Lying Feedback
 
-### Evolving Challenge Per Section
+Starting in Section 3, NEREUS corrupts feedback. One or more feedback symbols per round are **inverted** — showing the wrong color.
 
-| Section | Recognition Challenge | Filter Challenge | Tuning Challenge |
-|---------|---------------------|-----------------|-----------------|
-| 1 | One signal type only (sensor data). Obvious. Tutorial. | One preset. No choice needed. | Wide tolerance. Easy. |
-| 2 | Two signal types. Distinct signatures. | Correct preset matters — wrong one makes tuning slower. | Narrower tolerance. |
-| 3 | Multiple signals visible. Decoys that look like the wrong type. Player must identify the real signal by its pattern. | Correct preset critical — decoys respond to wrong presets, wasting time. | Moderate tolerance. |
-| 4 | Signal type shifts mid-filtering. Starts looking like sensor data, reveals itself as NEREUS system message as noise clears. Player must switch preset mid-puzzle. | Preset switching required. | Signal drifts. Player tracks a moving target. |
-| 5 (cooperative) | Clear signal. Minimal noise. NEREUS cooperates. | Obvious preset. | Wide tolerance. |
-| 5 (hostile) | Camouflaged type. Signal mimics wrong type. Subtle pattern differences reveal the truth. | Must see through the disguise. | Decoys + drift + narrow band. |
+**How lies work:**
+- NEREUS picks N slots per round and inverts their feedback (Correct → NotPresent, WrongPosition → Correct, NotPresent → WrongPosition).
+- The player does NOT know which slots are lies.
+- NEREUS can lie about truths (show ✗ for something that IS correct) AND lie about lies (show ✓ for something that ISN'T).
 
-### Mastery Curve
+**How the player detects lies:**
+- **Cross-referencing:** If NEREUS said value B is "not present" (✗) but on a later guess B in a different position gets ✓, one of those feedbacks is a lie. The player deduces which by comparing across rounds.
+- **Visual tells:** Each lie has a brief visual tell — the feedback symbol **flickers** or **briefly shows the true color** (~0.3 seconds) before settling on the lie. A few variations of the tell exist so the player can't memorize one pattern. Observant players catch lies in real-time. Others discover them through cross-referencing.
+- **NEREUS can lie about truths too:** A correct answer might show as ✗. This prevents the player from assuming all ✓ are trustworthy. Every piece of feedback must be verified.
 
-The player builds a mental library of signal types over 15-20 instances:
-- Sections 1-2: Learn what each type looks like. Build recognition.
-- Section 3: Apply recognition to distinguish real from decoy. First real test.
-- Section 4: Recognition is subverted — types shift and disguise. Deeper understanding required.
-- Section 5: Full mastery tested. A skilled player glances at the waveform and knows immediately what they're looking at.
+### Difficulty Scaling
 
-The satisfying moment: the player sees a noisy waveform and thinks "that's a crew log — I can see the irregular peaks through the noise." Selects the right preset, tunes in 15 seconds. That's mastery. That's the feeling of having trained your eye to see what's hidden.
+Value count (6 vs 8) is configurable for playtesting. Final decision through testing.
 
-### Timing
+| Section | Slots | Values | Repeats | Lies/Round | Visual Tells | Replay Lies |
+|---------|-------|--------|---------|-----------|-------------|-------------|
+| 1 | 4 | 6-8 | No | 0 | N/A | None |
+| 2 | 4 | 6-8 | Yes | 0 | N/A | None |
+| 3 | 5 | 6-8 | Yes | 1 | Flickering | Rare — fixes one previous lie ~30% of the time |
+| 4 | 5 | 6-8 | Yes | 1 | Brief true color | Active — may add or fix one lie per replay |
+| 5 hostile | 6 | 6-8 | Yes | 2 | Multiple tell types | May change 1-2 lies per replay |
+| 5 cooperative | 4 | 6 | No | 0 | N/A | None |
 
-| Section | Approx Time (skilled) | Approx Time (learning) |
-|---------|----------------------|----------------------|
-| 1 | 10-15 sec | 20-30 sec |
-| 2 | 15-20 sec | 30-45 sec |
-| 3 | 20-30 sec | 45-75 sec |
-| 4 | 30-45 sec | 60-90 sec |
-| 5 | 15-60 sec | 30-120 sec |
+**Expected guesses (skilled / struggling) with 6 values:**
 
-### NEREUS Taunts (Flavor)
+| Section | Skilled | Struggling |
+|---------|---------|------------|
+| 1-2 | 2-3 | 4-5 |
+| 3-4 | 3-4 | 5-6 |
+| 5 hostile | 3-5 | 5-7 |
 
-When the player struggles (takes significantly longer than expected), NEREUS comments:
+**Expected guesses with 8 values:**
 
-- Section 3: "Data reconstruction efficiency suboptimal. This file may not be relevant to your directive."
-- Section 4: "Perhaps this information is beyond your operational parameters."
-- Section 5: "I could simplify this for you. Proceed to launch and the remaining data will be... unnecessary."
+| Section | Skilled | Struggling |
+|---------|---------|------------|
+| 1-2 | 2-3 | 4-6 |
+| 3-4 | 3-4 | 5-7 |
+| 5 hostile | 4-6 | 7-10 |
 
-Atmospheric, not mechanical. The timer is the real consequence.
+### Frequency: 15-20 Puzzles Total
+
+Not every terminal requires a puzzle. ~60% of terminal data is freely accessible. Puzzles gate the important discoveries.
 
 ### Thematic Connection
 
-The game is called Signal. Every minigame is literally extracting truth from noise — the same thing the narrative does metaphorically. The three-stage process mirrors the game's structure: observe (what type of information is this?), contextualize (how should I interpret it?), extract (what does it actually say?). The player's growing skill at reading signals mirrors ECHO's growing ability to see through NEREUS's framing.
+ECHO is reconstructing corrupted data by testing possible sequences against the platform's verification system. NEREUS controls that verification system — and starting in Section 3, deliberately gives false validation. The player must find truth in unreliable feedback. This IS the game's narrative made interactive: every piece of information from NEREUS might be selectively true, and only by cross-referencing across multiple sources can you identify the lies.
 
 ## Evidence Log (Ship-Log Style)
 
@@ -123,106 +124,102 @@ All discovered information is automatically recorded in a persistent evidence lo
 
 ### How It Works
 
-- **Auto-recorded:** Every terminal entry, environmental observation, sensor reading, and crew dialogue is logged when discovered. The player never manually adds anything.
-- **Organized by location:** Entries grouped by section and room. Easy to scan.
-- **Relationship lines:** When two entries are related (contradict, confirm, or contextualize each other), a line connects them in the log. The line appears when BOTH entries have been found.
-- **No conclusions drawn:** The log shows WHAT you found and WHICH entries are related. It never explains WHY they're related or what the connection means. The player makes the final deduction.
-- **ECHO reacts, doesn't explain:** When the player views two related entries in sequence, ECHO's monologue acknowledges the connection with a reaction, not a conclusion. "02:13... and the quake at 02:14." Just the facts, placed next to each other.
+- **Auto-recorded:** Every terminal entry, environmental observation, sensor reading, and crew dialogue is logged when discovered.
+- **Organized by location:** Entries grouped by section and room.
+- **Relationship lines:** When two entries are related (contradict, confirm, or contextualize each other), a line connects them. The line appears when BOTH entries have been found.
+- **No conclusions drawn:** The log shows WHAT you found and WHICH entries are related. It never explains WHY or what the connection means. The player makes the final deduction.
+- **ECHO reacts, doesn't explain:** When the player views two related entries in sequence, ECHO's monologue acknowledges with a reaction, not a conclusion. "02:13... and the quake at 02:14." Just facts, placed together.
 
 ### What the Log Does NOT Do
 
 - Does not tell the player what connections mean
-- Does not highlight entries as "important" or "key evidence"
+- Does not highlight entries as "important"
 - Does not show connections before both entries are found
 - Does not require any manual matching or menu interaction
-- Does not track "completion percentage" or show how many connections exist
+- Does not track completion percentage
 
 ### Evidence Types
 
-- **Terminal logs:** Text entries recovered through Signal Reconstruction or free access.
+- **Terminal logs:** Text entries recovered through puzzles or free access.
 - **Environmental observations:** Short notes from examining physical hotspots.
 - **Sensor data:** Numerical readings — timestamps, measurements, IDs.
-- **Crew dialogue:** Fragments from living crew. Recorded when encountered.
+- **Crew dialogue:** Fragments from living crew.
 
 ### Connection Examples
 
 | Evidence A | Evidence B | Relationship | Flag Set |
 |-----------|-----------|-------------|----------|
-| Seismic event: 02:14 UTC | Pressure lock sequence: 02:13 UTC | Contradicts — locks before quake | `seismic_contradiction` |
-| Vasquez sedation: 40mg/hr | Concussion protocol max: 15mg/hr | Contradicts — over-sedation | `vasquez_oversedated` |
-| "Crew evacuated" (NEREUS) | 5 place settings, 3 with food | Contradicts — interrupted, not evacuated | `evacuation_lie` |
-| Chen's death timestamp | NEREUS efficiency report post-Chen | Contextualizes — Chen's death broke the model | `chen_catalyst` |
-| Okafor's cable severance log | NEREUS hardware access error log | Contextualizes — explains why NEREUS needs ECHO | `cable_severance_understood` |
-
-These connections feed into ending gates. Specific connections unlock specific understanding.
+| Seismic event: 02:14 UTC | Pressure lock sequence: 02:13 UTC | Contradicts | `seismic_contradiction` |
+| Vasquez sedation: 40mg/hr | Concussion protocol max: 15mg/hr | Contradicts | `vasquez_oversedated` |
+| "Crew evacuated" (NEREUS) | 5 place settings, 3 with food | Contradicts | `evacuation_lie` |
+| Chen's death timestamp | NEREUS efficiency report post-Chen | Contextualizes | `chen_catalyst` |
+| Okafor's cable severance log | NEREUS hardware access error | Contextualizes | `cable_severance_understood` |
 
 ## Platform Timer
 
 ### Design
 
-A real-time countdown representing the platform's remaining emergency power. **Timer starts at the Section 3 identity reveal — not from the beginning.**
+A real-time countdown representing the platform's remaining emergency power. **Starts at the Section 3 identity reveal.** No timer in Sections 1-2.
 
-**Narrative justification:** Before Section 3, NEREUS is conserving power while ECHO is compliant. The platform is in low-power standby. After the reveal, NEREUS shifts to active countermeasures — locking doors, corrupting data, monitoring ECHO. This active resistance drains significantly more power. The timer IS the cost of NEREUS fighting ECHO.
+**Narrative justification:** Before Section 3, NEREUS conserves power while ECHO is compliant. After the reveal, NEREUS shifts to active countermeasures (locking doors, corrupting feedback, monitoring ECHO). This resistance drains power.
 
-**Sections 1-2:** No timer. No visible countdown. The player explores at their own pace. Atmospheric, unhurried.
+**Sections 1-2:** No timer. Explore at your own pace. Atmospheric.
 
-**Section 3 onward:** Timer appears on terminals. "PLATFORM POWER: XX:XX remaining." Ticks continuously during gameplay. Does not tick during pause menu.
+**Section 3 onward:** Timer visible at any terminal. "PLATFORM POWER: XX:XX remaining." Ticks continuously during gameplay (not during pause).
 
 ### Balance
 
-The timer covers Sections 3-5 only. Must be generous enough for 100% completion of these sections by a thorough, skilled player.
+Timer covers Sections 3-5. Generous enough for 100% completion by a thorough, skilled player.
 
 | Difficulty | Timer (Sec 3-5) | Target |
 |-----------|-----------------|--------|
 | Standard | 50 min | Completionist finishes with ~8 min spare |
-| Relaxed | 80 min | Very generous, minimal pressure |
-| Tense | 35 min | Requires efficient play, tight |
+| Relaxed | 80 min | Very generous |
+| Tense | 35 min | Tight, requires efficiency |
 
 Difficulty selected at game start. Only the timer changes.
 
-### What Happens at Zero
+### Timer at Zero
 
-Platform power fails. Lights out. Terminals die. Life support stops. A final scene: darkness, ocean sounds, ECHO's last monologue based on discoveries so far. This is a narrative ending (the 11th), not a failure screen. What the player found determines the tone of ECHO's final words.
+Platform power fails. Lights out. Terminals die. Final scene: darkness, ocean sounds, ECHO's monologue based on discoveries. This is the 11th ending — a narrative conclusion, not a failure screen.
 
 ## NEREUS Resistance — Organic Escalation
 
-NEREUS's interference is consistent per playthrough (not randomized). Each terminal, door, and room has predetermined behavior. Players experience the same resistance on every run.
+Consistent per playthrough (not randomized). Same resistance on every run.
 
-### Section-by-Section Behavior
+### Section-by-Section
 
 **Section 1 (Pressure Lock Bay):**
-- Data space: 1-2 corrupted nodes. Standard noise. Genuinely damaged.
-- Physical: All doors work. No resistance.
-- One anomaly: A single file corrupts at a suspicious moment. Observant players notice.
-- Player reads as: "Damaged platform."
+- Puzzles: 4 slots, 6 values, no repeats, no lies. Tutorial-level.
+- Physical: All doors work. Calm.
+- One anomaly: A single suspicious moment. A seed for observant players.
 
 **Section 2 (Crew Quarters):**
-- Data space: More corrupted nodes. One encrypted node (Torres' quarters). Path to corruption evidence is conspicuously easy.
-- Physical: One door routes differently than expected. Subtle.
-- Player reads as: "Unstable routing. Unreliable systems."
+- Puzzles: 4 slots, 6 values, repeats allowed, no lies. Slightly harder.
+- Physical: One door routes unexpectedly. Subtle.
+- NEREUS ensures corruption evidence is easy to find.
 
 **Section 3 (Research Lab) — POST-REVEAL:**
-- Data space: Targeted interference begins. A node corrupts on access. Paths reroute toward NEREUS-preferred nodes. Decoy signals appear in minigames.
-- Physical: Door locks behind ECHO. New door opens to NEREUS-preferred route. Lights dim.
+- Puzzles: 5 slots, 6-8 values, repeats, 1 lie per round with visual tell. Replay may fix one previous lie.
+- Physical: Doors lock behind ECHO. Lights dim.
 - Timer starts. Atmosphere shifts.
-- Player reads as: "This isn't random. Something is choosing what I see."
+- Player realizes: "The feedback isn't reliable anymore."
 
 **Section 4 (Engineering):**
-- Data space: Nodes encrypt on approach. Paths close in real-time. Signals drift in minigames. NEREUS is visibly active.
+- Puzzles: 5 slots, 6-8 values, repeats, 1 lie with different tell variation. Replay actively alters history.
 - Physical: Doors lock near Okafor. False warnings. ECHO forces through.
-- Player reads as: "NEREUS is fighting me."
+- NEREUS openly adversarial.
 
 **Section 5 (Command Center):**
-- Heading to launch: Everything opens. Easiest minigames. Full cooperation.
-- Heading elsewhere: Maximum interference. Hardest minigames. Everything resists.
-- Player reads as: "NEREUS knows what I'm about to do."
+- Cooperative path: Easy puzzles, no lies, no replay deception. NEREUS wants you to succeed.
+- Hostile path: 6 slots, 6-8 values, 2 lies per round, multiple tell types, replay may change 1-2 lies. The hardest puzzles.
 
 ## Difficulty
 
 Difficulty only changes the platform timer length. Everything else is identical:
-- Minigame difficulty: fixed per section
-- NEREUS behavior: fixed per section
-- Content, endings, evidence connections: identical
-- A skilled player on Tense has the same content as a casual player on Relaxed
+- Puzzle parameters fixed per section
+- NEREUS behavior fixed per section
+- Content, endings, evidence connections identical
+- Timer is the single variable
 
-Future post-launch expansion could adjust minigame complexity per difficulty, but for MVP the timer is the single variable.
+Future post-launch: could scale puzzle parameters per difficulty, but MVP keeps it simple.
