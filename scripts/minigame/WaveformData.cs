@@ -233,32 +233,34 @@ public class WaveformData
 
     private float GetClarityInternal()
     {
-        // Frequency match: Gaussian falloff from signal frequency
+        // Frequency match: tight Gaussian. Sigma = 0.015.
+        // At exact match: 1.0. Off by 0.015: 0.60. Off by 0.03: 0.13. Off by 0.05: 0.01.
+        // This makes frequency tuning feel precise and responsive.
         float freqDist = Math.Abs(FilterFrequency - SignalFrequency);
-        float freqMatch = (float)Math.Exp(-freqDist * freqDist / (2.0 * 0.04 * 0.04));
-        // 0.04 sigma means: at distance 0.04, match is ~60%. At 0.1, match is ~4%.
+        float freqMatch = (float)Math.Exp(-freqDist * freqDist / (2.0 * 0.015 * 0.015));
 
-        // Bandwidth match: narrower is better (up to a point), centered on the signal type's spectral radius
-        float idealBandwidth = SpectralRadius(CorrectType) * 2f + 0.04f;
-        float bwDist = Math.Abs(FilterBandwidth - idealBandwidth);
-        float bwMatch = (float)Math.Exp(-bwDist * bwDist / (2.0 * 0.1 * 0.1));
+        // Phase match: normalized to [0,1] where 0 = worst, 1 = perfect alignment.
+        // The signal phase is in radians [0, 2π], FilterPhase is in [0, 1].
+        float normalizedSignalPhase = (float)(SignalPhase / (2.0 * Math.PI));
+        float phaseDist = Math.Abs(FilterPhase - normalizedSignalPhase);
+        if (phaseDist > 0.5f) phaseDist = 1f - phaseDist; // Wrap (phase is circular)
+        // Tight Gaussian on phase too. Sigma = 0.08.
+        // Perfect: 1.0. Off by 0.08: 0.60. Off by 0.15: 0.07.
+        float phaseMatch = (float)Math.Exp(-phaseDist * phaseDist / (2.0 * 0.08 * 0.08));
 
-        // Phase match: cosine similarity (0 = opposite, 1 = aligned)
-        float phaseDist = Math.Abs(FilterPhase - (float)(SignalPhase / (2.0 * Math.PI)));
-        // Wrap to [0, 0.5] (phase is periodic)
-        if (phaseDist > 0.5f) phaseDist = 1f - phaseDist;
-        float phaseMatch = 1f - phaseDist * 2f; // Linear: 0 at opposite, 1 at aligned
+        // Amplitude: acts as noise floor. Ideal value depends on noise level.
+        // For simplicity: ideal is ~0.15 of signal amplitude. Generous tolerance.
+        float idealAmp = SignalAmplitude * 0.15f;
+        float ampDist = Math.Abs(FilterAmplitude - idealAmp);
+        float ampMatch = (float)Math.Exp(-ampDist * ampDist / (2.0 * 0.1 * 0.1));
 
-        // Amplitude threshold: light noise floor helps, too much cuts signal
-        float ampMatch = 1f - Math.Abs(FilterAmplitude - 0.1f) * 3f;
-        ampMatch = Math.Clamp(ampMatch, 0.3f, 1f);
-
-        // Combined clarity: frequency is most important, then phase, then bandwidth
-        float clarity = freqMatch * 0.5f + phaseMatch * 0.25f + bwMatch * 0.15f + ampMatch * 0.1f;
+        // Combined: frequency 50%, phase 35%, amplitude 15%
+        // At perfect settings: 1.0. Requires all three to be tuned for >0.95.
+        float clarity = freqMatch * 0.50f + phaseMatch * 0.35f + ampMatch * 0.15f;
         return Math.Clamp(clarity, 0f, 1f);
     }
 
-    public bool IsComplete(float threshold = 0.85f)
+    public bool IsComplete(float threshold = 0.95f)
     {
         return GetClarity() >= threshold;
     }

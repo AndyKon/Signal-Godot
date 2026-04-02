@@ -185,11 +185,13 @@ public partial class SignalPuzzle : Control
 
         if (correct)
         {
-            // Correct type: center the filter near the actual signal frequency
-            // but with a slight offset so the player still needs to fine-tune
-            _data.FilterFrequency = _data.SignalFrequency + 0.05f;
+            // Correct type: offset from signal so player needs to fine-tune all 3 sliders.
+            // Frequency offset 0.03 → freqMatch ~0.13 (needs slider adjustment to reach 1.0)
+            // Phase at 0.5 is arbitrary → phaseMatch varies (needs adjustment)
+            // Amplitude at 0.1 → close but not ideal (needs adjustment)
+            _data.FilterFrequency = _data.SignalFrequency + 0.03f;
             _data.FilterBandwidth = bandwidth;
-            _data.FilterAmplitude = 0.05f;
+            _data.FilterAmplitude = 0.1f;
             _data.FilterPhase = 0.5f;
             _statusLabel.Text = "Good match! Now adjust the sliders to fine-tune. Watch the clarity percentage.";
         }
@@ -220,16 +222,19 @@ public partial class SignalPuzzle : Control
         {
             bool correct = _selectedPreset == (int)_data.CorrectType;
             float baseFreq = correct
-                ? _data.SignalFrequency + 0.05f  // Near signal, needs fine-tuning
+                ? _data.SignalFrequency + 0.03f  // Near signal, needs fine-tuning
                 : _data.SignalFrequency + 0.25f; // Far from signal
             if (baseFreq > 0.85f) baseFreq = _data.SignalFrequency - 0.25f;
 
             float bandwidth = PresetBandwidths[_selectedPreset];
 
-            // Frequency slider: ±0.15 offset from base position
-            _data.FilterFrequency = baseFreq + (frequency - 0.5f) * 0.3f;
+            // Frequency slider: ±0.06 from base. With sigma=0.015, this covers
+            // the full useful range (4 sigma each direction).
+            _data.FilterFrequency = baseFreq + (frequency - 0.5f) * 0.12f;
             _data.FilterBandwidth = bandwidth;
-            _data.FilterAmplitude = amplitude * 0.3f;
+            // Amplitude: 0 to 0.4 range
+            _data.FilterAmplitude = amplitude * 0.4f;
+            // Phase: full 0-1 range (maps to one full cycle)
             _data.FilterPhase = phase;
         }
         else
