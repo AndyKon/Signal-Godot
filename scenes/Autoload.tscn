@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scripts/core/GameManager.cs" id="1"]
 [ext_resource type="Script" path="res://scripts/interaction/InteractionManager.cs" id="2"]
@@ -12,6 +12,7 @@
 [ext_resource type="Script" path="res://scripts/ui/SaveSlotUI.cs" id="10"]
 [ext_resource type="Script" path="res://scripts/tests/AutotestBootstrap.cs" id="11"]
 [ext_resource type="Script" path="res://scripts/evidence/EvidenceManager.cs" id="12"]
+[ext_resource type="Script" path="res://scripts/evidence/EvidenceWebUI.cs" id="13"]
 
 [node name="Autoload" type="Node"]
 
@@ -35,6 +36,9 @@ script = ExtResource("6")
 
 [node name="EvidenceManager" type="Node" parent="."]
 script = ExtResource("12")
+
+[node name="EvidenceWebUI" type="CanvasLayer" parent="."]
+script = ExtResource("13")
 
 [node name="CursorManager" type="Node" parent="."]
 script = ExtResource("9")
