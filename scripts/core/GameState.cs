@@ -8,11 +8,21 @@ public class GameState
     private readonly HashSet<int> _poweredSections = new();
     private readonly List<string> _inventory = new();
     private int _totalOptionalFlags;
+    private readonly HashSet<string> _discoveredEvidence = new();
+    private readonly HashSet<string> _firedConnections = new();
 
     public string CurrentScene { get; set; } = "";
     public int FlagCount => _flags.Count;
     public float FlagRatio => _totalOptionalFlags > 0 ? (float)_flags.Count / _totalOptionalFlags : 0f;
     public IReadOnlyList<string> Inventory => _inventory;
+
+    public IReadOnlyCollection<string> DiscoveredEvidence => _discoveredEvidence;
+    public IReadOnlyCollection<string> FiredConnections => _firedConnections;
+
+    public void DiscoverEvidence(string id) => _discoveredEvidence.Add(id);
+    public bool HasEvidence(string id) => _discoveredEvidence.Contains(id);
+    public void MarkConnectionFired(string key) => _firedConnections.Add(key);
+    public bool IsConnectionFired(string key) => _firedConnections.Contains(key);
 
     public void SetFlag(string flag) => _flags.Add(flag);
     public bool HasFlag(string flag) => _flags.Contains(flag);
@@ -38,7 +48,9 @@ public class GameState
             PoweredSections = new List<int>(_poweredSections),
             CurrentScene = CurrentScene,
             InventoryItems = new List<string>(_inventory),
-            TotalOptionalFlags = _totalOptionalFlags
+            TotalOptionalFlags = _totalOptionalFlags,
+            DiscoveredEvidence = new List<string>(_discoveredEvidence),
+            FiredConnections = new List<string>(_firedConnections)
         };
     }
 
@@ -50,6 +62,8 @@ public class GameState
         CurrentScene = data.CurrentScene;
         foreach (var item in data.InventoryItems) _inventory.Add(item);
         _totalOptionalFlags = data.TotalOptionalFlags;
+        foreach (var id in data.DiscoveredEvidence) _discoveredEvidence.Add(id);
+        foreach (var key in data.FiredConnections) _firedConnections.Add(key);
     }
 
     public void Reset()
@@ -59,5 +73,7 @@ public class GameState
         _inventory.Clear();
         CurrentScene = "";
         _totalOptionalFlags = 0;
+        _discoveredEvidence.Clear();
+        _firedConnections.Clear();
     }
 }

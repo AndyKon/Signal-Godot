@@ -11,4 +11,6 @@ public class SaveData
     public string CurrentScene { get; set; } = "";
     public List<string> InventoryItems { get; set; } = new();
     public int TotalOptionalFlags { get; set; }
+    public List<string> DiscoveredEvidence { get; set; } = new();
+    public List<string> FiredConnections { get; set; } = new();
 }
