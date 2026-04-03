@@ -92,6 +92,8 @@ RoomDefinition:
   Section: int                   # 1-5
 
   # Layer colors/backgrounds (programmatic for now, replaceable with art later)
+  # Art pipeline: each room needs 3 PNGs at 2880×1404 (150%×130% of 1920×1080)
+  # Background: fully opaque. Midground/Foreground: transparent where empty.
   BgColor: Color
   MidColor: Color
   FgColor: Color
@@ -101,6 +103,7 @@ RoomDefinition:
   MusicClip: string              # optional music override, empty = no change
 
   # Entry narrative (ECHO monologue, first visit only)
+  # First-visit tracked via auto-generated flag: "visited_" + Id
   EntryNarrative: string         # empty = no narration on entry
 
   # Atmospheric settings
@@ -117,10 +120,26 @@ RoomDefinition:
     IsCriticalPath: bool         # gets ambient cue if true
     HotspotData: HotspotData     # existing action definition
     EvidenceToDiscover: string   # optional evidence ID
-    PuzzleDifficulty: int        # -1 = no puzzle, 0+ = decryption puzzle section difficulty
+    RequiresPuzzle: bool          # if true, launches decryption puzzle before showing content
+    PuzzleOverride: string        # empty = use game-state difficulty, non-empty = named preset key
 ```
 
 Data structure is a plain class with public fields — adding new fields later requires one line plus a default value. Existing room definitions are unaffected by additions.
+
+### Puzzle launch flow
+When `InteractionManager` processes a hotspot with `RequiresPuzzle = true`:
+
+1. Check if puzzle already solved (flag: `"solved_" + hotspotId`). If solved, skip to step 6.
+2. Determine puzzle parameters: if `PuzzleOverride` is set, use that named preset. Otherwise, query game state (section, flags) for current difficulty tier.
+3. Launch `DecryptionPuzzleUI` as a fullscreen overlay (CanvasLayer). **Does NOT pause the game** — the platform timer keeps ticking. Puzzle time is a real cost.
+4. Room interaction is blocked while puzzle is active.
+5. On puzzle completion: set flag `"solved_" + hotspotId`, close puzzle overlay.
+6. Resume normal hotspot action — show terminal content via NarrativeManager, discover evidence, set flags.
+
+Revisiting a solved terminal shows the content directly (no repeat puzzle).
+
+### Evidence web tutorial trigger
+The evidence web is not mentioned until the player has something to see in it. On the first evidence connection activation (typically early Section 2: `nereus_boot_message` + `sudden_departure`), after the ECHO reaction plays, a follow-up prompt displays: "Data correlation detected. Access memory log [J] to review." This teaches the evidence web at the moment it becomes useful.
 
 ### Room registry
 Static data file (like `EvidenceRegistry.cs`) containing all room definitions. A generic scene loads the correct room data by ID.
@@ -175,7 +194,7 @@ Three rooms serving as the tutorial section. Introduces scanning, evidence, puzz
 - **Midground**: Locked terminal (requires decryption puzzle), equipment lockers, door back to Room 1, locked door to Room 3 (requires keycard)
 - **Foreground**: Scattered tools on floor, emergency kit near door, dust
 - **Hotspots**:
-  - Locked Terminal (optional, midground) — Decryption puzzle (Section 1 difficulty: 4 slots, 6 values, no lies). On solve: seismic data report. Evidence: `seismic_report`. Flag: `read_seismic_report`
+  - Locked Terminal (optional, midground) — `RequiresPuzzle: true`. Puzzle params from game state (Section 1 = 4 slots, 6 values, no lies). On solve: seismic data report. Evidence: `seismic_report`. Flag: `read_seismic_report`
   - Equipment Locker (optional, midground) — Examine: standard maintenance equipment, nothing unusual
   - Keycard (critical path, foreground, positioned low — on the floor near shelves) — PickUp: hub keycard. Flag: `picked_up_hub_keycard`
   - Emergency Kit (optional, foreground) — Examine: unopened. Everything still sealed. Not used.
@@ -209,14 +228,18 @@ Three rooms serving as the tutorial section. Introduces scanning, evidence, puzz
 - `scripts/rooms/HubRoom1.cs`, `HubRoom2.cs`, `HubRoom3.cs` — Replaced by data-driven rooms
 - `scenes/Section1_Hub_Room1.tscn`, `Section1_Hub_Room2.tscn`, `Section1_Hub_Room3.tscn` — Replaced by new ParallaxRoom scenes
 
+### Modify
+- `scripts/tests/AutoPlaytest.cs` — Remove room-navigation tests (tested placeholder content, not systems). Keep core system tests (GameState, SaveSystem, ending evaluator). Room integration tested via manual playtesting.
+- `scripts/interaction/InteractionManager.cs` — Add puzzle gate check in ExecuteAction (RequiresPuzzle flow)
+
 ### New Scenes
 - `scenes/Section1_PressureLockControl.tscn` — Room 1 using ParallaxRoom
 - `scenes/Section1_EquipmentStorage.tscn` — Room 2 using ParallaxRoom
 - `scenes/Section1_PowerJunction.tscn` — Room 3 using ParallaxRoom
 
 ## What This Spec Does NOT Cover
-- Actual art assets (using programmatic colored rectangles for now — replaceable later)
+- Actual art assets (using programmatic colored rectangles — art pipeline dimensions noted in room data structure)
 - Audio content (ambient clips not yet produced)
 - Sections 2-5 room content (this spec builds Section 1 only — subsequent sections follow the same pattern)
-- Platform timer UI (separate feature)
-- Decryption puzzle trigger wiring (the PuzzleDifficulty field in hotspot data indicates a puzzle gate — the ParallaxRoom base class needs to intercept this and launch the decryption UI before showing the terminal content)
+- Platform timer UI (separate feature — timer runs during puzzles, pauses only in evidence web and pause menu)
+- Flag-driven puzzle difficulty tiers (for now: switch on section number; later: full game-state query)
