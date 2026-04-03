@@ -10,6 +10,9 @@ public partial class NarrativeManager : CanvasLayer
 
     private PanelContainer _panel;
     private RichTextLabel _textDisplay;
+    private PanelContainer _echoPanel;
+    private RichTextLabel _echoTextDisplay;
+    private bool _isEchoMode;
     private AudioStreamPlayer _voicePlayer;
     private readonly Dictionary<string, NarrativeEntry> _entryLookup = new();
     private bool _isDisplaying;
@@ -65,6 +68,33 @@ public partial class NarrativeManager : CanvasLayer
         _textDisplay.AddThemeFontSizeOverride("normal_font_size", 18);
         _panel.AddChild(_textDisplay);
 
+        _echoPanel = new PanelContainer();
+        _echoPanel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.BottomWide);
+        _echoPanel.OffsetTop = -120;
+        _echoPanel.CustomMinimumSize = new Vector2(0, 120);
+
+        var echoStylebox = new StyleBoxFlat();
+        echoStylebox.BgColor = new Color(0.02f, 0.04f, 0.10f, 0.75f);
+        echoStylebox.BorderColor = new Color(0.1f, 0.4f, 0.7f, 0.4f);
+        echoStylebox.BorderWidthTop = 1;
+        echoStylebox.ContentMarginLeft = 16;
+        echoStylebox.ContentMarginRight = 16;
+        echoStylebox.ContentMarginTop = 12;
+        echoStylebox.ContentMarginBottom = 12;
+        _echoPanel.AddThemeStyleboxOverride("panel", echoStylebox);
+        root.AddChild(_echoPanel);
+
+        _echoTextDisplay = new RichTextLabel();
+        _echoTextDisplay.BbcodeEnabled = true;
+        _echoTextDisplay.FitContent = true;
+        _echoTextDisplay.ScrollActive = false;
+        _echoTextDisplay.VisibleCharacters = 0;
+        _echoTextDisplay.AddThemeColorOverride("default_color", new Color(0.4f, 0.75f, 0.95f));
+        _echoTextDisplay.AddThemeFontSizeOverride("normal_font_size", 18);
+        _echoPanel.AddChild(_echoTextDisplay);
+
+        _echoPanel.Visible = false;
+
         _voicePlayer = new AudioStreamPlayer();
         AddChild(_voicePlayer);
     }
@@ -90,6 +120,21 @@ public partial class NarrativeManager : CanvasLayer
             file = dirAccess.GetNext();
         }
         GameLog.Event("Narrative", $"Loaded {_entryLookup.Count} entries");
+    }
+
+    public void ShowEchoMonologue(string text)
+    {
+        _isEchoMode = true;
+        _fullText = $"[i]{text}[/i]";
+        _echoTextDisplay.Text = _fullText;
+        _echoTextDisplay.VisibleCharacters = 0;
+        _visibleChars = 0;
+        _charTimer = 0;
+        _isDisplaying = true;
+        _cooldownFrames = 3;
+        _echoPanel.Visible = true;
+        _panel.Visible = false;
+        GameLog.Event("Narrative", $"ECHO monologue: {text}");
     }
 
     public void ShowText(string text)
@@ -153,12 +198,14 @@ public partial class NarrativeManager : CanvasLayer
         bool clicked = Input.IsActionJustPressed("ui_accept") || (!mouseDown && _wasMouseDown);
         _wasMouseDown = mouseDown;
 
+        var display = _isEchoMode ? _echoTextDisplay : _textDisplay;
+
         if (clicked)
         {
             if (_visibleChars < _fullText.Length)
             {
                 // Skip typewriter — show all text
-                _textDisplay.VisibleCharacters = -1;
+                display.VisibleCharacters = -1;
                 _visibleChars = _fullText.Length;
                 return;
             }
@@ -176,7 +223,7 @@ public partial class NarrativeManager : CanvasLayer
             {
                 _charTimer -= CharDelay;
                 _visibleChars++;
-                _textDisplay.VisibleCharacters = _visibleChars;
+                display.VisibleCharacters = _visibleChars;
             }
         }
     }
@@ -184,8 +231,12 @@ public partial class NarrativeManager : CanvasLayer
     public new void Hide()
     {
         _panel.Visible = false;
+        _echoPanel.Visible = false;
         _isDisplaying = false;
+        _isEchoMode = false;
         _textDisplay.Text = "";
         _textDisplay.VisibleCharacters = 0;
+        _echoTextDisplay.Text = "";
+        _echoTextDisplay.VisibleCharacters = 0;
     }
 }
