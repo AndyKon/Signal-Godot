@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/core/GameManager.cs" id="1"]
 [ext_resource type="Script" path="res://scripts/interaction/InteractionManager.cs" id="2"]
@@ -11,6 +11,7 @@
 [ext_resource type="Script" path="res://scripts/interaction/CursorManager.cs" id="9"]
 [ext_resource type="Script" path="res://scripts/ui/SaveSlotUI.cs" id="10"]
 [ext_resource type="Script" path="res://scripts/tests/AutotestBootstrap.cs" id="11"]
+[ext_resource type="Script" path="res://scripts/evidence/EvidenceManager.cs" id="12"]
 
 [node name="Autoload" type="Node"]
 
@@ -31,6 +32,9 @@ script = ExtResource("5")
 
 [node name="AudioManager" type="Node" parent="."]
 script = ExtResource("6")
+
+[node name="EvidenceManager" type="Node" parent="."]
+script = ExtResource("12")
 
 [node name="CursorManager" type="Node" parent="."]
 script = ExtResource("9")
