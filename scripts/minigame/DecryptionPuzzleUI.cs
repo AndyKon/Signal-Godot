@@ -27,21 +27,23 @@ public partial class DecryptionPuzzleUI : Control
     private static readonly Color ColorTermText   = new Color(0.0f,  0.9f,  0.4f);    // neon green
     private static readonly Color ColorTermDim    = new Color(0.0f,  0.45f, 0.2f);    // dim green
 
-    // ── Hex value theme — medium tints, dark text readable on them ───────────
-    private static readonly string[] HexLabels = { "0a", "3f", "b2", "e7", "1c", "d4", "8f", "5b" };
-    private static readonly Color[] HexTints =
+    // ── Hex value color pool (shuffled per puzzle) ─────────────────────────
+    private static readonly Color[] HexColorPool =
     {
-        new Color(0.1f,  0.6f,  0.85f), // 0a — cyan
-        new Color(0.1f,  0.75f, 0.55f), // 3f — teal
-        new Color(0.2f,  0.7f,  0.2f),  // b2 — green
-        new Color(0.75f, 0.7f,  0.1f),  // e7 — yellow
-        new Color(0.85f, 0.5f,  0.1f),  // 1c — orange
-        new Color(0.25f, 0.4f,  0.8f),  // d4 — blue
-        new Color(0.55f, 0.3f,  0.75f), // 8f — purple
-        new Color(0.8f,  0.25f, 0.55f), // 5b — magenta
+        new Color(0.1f,  0.6f,  0.85f), // cyan
+        new Color(0.1f,  0.75f, 0.55f), // teal
+        new Color(0.2f,  0.7f,  0.2f),  // green
+        new Color(0.75f, 0.7f,  0.1f),  // yellow
+        new Color(0.85f, 0.5f,  0.1f),  // orange
+        new Color(0.25f, 0.4f,  0.8f),  // blue
+        new Color(0.55f, 0.3f,  0.75f), // purple
+        new Color(0.8f,  0.25f, 0.55f), // magenta
     };
-    // Text on hex tints uses black for legibility
     private static readonly Color ColorHexText = new Color(0.0f, 0.0f, 0.0f);
+
+    // Per-puzzle randomized labels and color assignments
+    private string[] _hexLabels;
+    private Color[] _hexTints;
 
     // ── Feedback colours — vivid, unmistakable against terminal black ─────────
     private static readonly Color ColorCorrect    = new Color(0.0f,  1.0f,  0.4f);    // vivid green
@@ -183,6 +185,7 @@ public partial class DecryptionPuzzleUI : Control
         _historySlotLabels.Clear();
         _historyDotBgs.Clear();
 
+        RandomizeHexTheme();
         BuildUI(section);
         ResetCurrentInput();
         SetStatus("Enter your guess.");
@@ -213,9 +216,42 @@ public partial class DecryptionPuzzleUI : Control
         _historySlotLabels.Clear();
         _historyDotBgs.Clear();
 
+        RandomizeHexTheme();
         BuildUI(0);
         ResetCurrentInput();
         SetStatus("Enter your guess.");
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Per-puzzle theme randomization
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private void RandomizeHexTheme()
+    {
+        int count = _puzzle.ValueCount;
+        var rng = new System.Random((int)(Time.GetTicksMsec() % int.MaxValue));
+
+        // Generate random 2-digit hex labels
+        _hexLabels = new string[count];
+        var usedLabels = new System.Collections.Generic.HashSet<string>();
+        for (int i = 0; i < count; i++)
+        {
+            string label;
+            do { label = rng.Next(256).ToString("x2"); }
+            while (!usedLabels.Add(label));
+            _hexLabels[i] = label;
+        }
+
+        // Shuffle colors from the pool — pick `count` colors in random order
+        var colorIndices = new System.Collections.Generic.List<int>();
+        for (int i = 0; i < HexColorPool.Length; i++) colorIndices.Add(i);
+        _hexTints = new Color[count];
+        for (int i = 0; i < count; i++)
+        {
+            int idx = rng.Next(colorIndices.Count);
+            _hexTints[i] = HexColorPool[colorIndices[idx]];
+            colorIndices.RemoveAt(idx);
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -411,25 +447,25 @@ public partial class DecryptionPuzzleUI : Control
         {
             int valueIndex = v;
             var btn = new Button();
-            btn.Text = HexLabels[v];
+            btn.Text = _hexLabels[v];
             btn.CustomMinimumSize = new Vector2(SlotSize, SlotSize);
             btn.AddThemeFontSizeOverride("font_size", 20);
 
             var style = new StyleBoxFlat();
-            style.BgColor = HexTints[v].Darkened(0.7f);
-            style.BorderColor = HexTints[v].Darkened(0.2f);
+            style.BgColor = _hexTints[v].Darkened(0.7f);
+            style.BorderColor = _hexTints[v].Darkened(0.2f);
             style.SetBorderWidthAll(2);
             style.SetCornerRadiusAll(0);
             btn.AddThemeStyleboxOverride("normal", style);
-            btn.AddThemeColorOverride("font_color", HexTints[v].Lightened(0.4f));
+            btn.AddThemeColorOverride("font_color", _hexTints[v].Lightened(0.4f));
 
             var styleHover = (StyleBoxFlat)style.Duplicate();
-            styleHover.BgColor = HexTints[v].Darkened(0.5f);
-            styleHover.BorderColor = HexTints[v];
+            styleHover.BgColor = _hexTints[v].Darkened(0.5f);
+            styleHover.BorderColor = _hexTints[v];
             btn.AddThemeStyleboxOverride("hover", styleHover);
 
             var stylePressed = (StyleBoxFlat)style.Duplicate();
-            stylePressed.BgColor = HexTints[v].Darkened(0.3f);
+            stylePressed.BgColor = _hexTints[v].Darkened(0.3f);
             btn.AddThemeStyleboxOverride("pressed", stylePressed);
 
             btn.Pressed += () => AppendInputValue(valueIndex);
@@ -501,8 +537,8 @@ public partial class DecryptionPuzzleUI : Control
             }
             else
             {
-                _inputSlotBgs[i].Color   = HexTints[v];
-                _inputSlotLabels[i].Text = HexLabels[v];
+                _inputSlotBgs[i].Color   = _hexTints[v];
+                _inputSlotLabels[i].Text = _hexLabels[v];
             }
         }
 
@@ -599,14 +635,14 @@ public partial class DecryptionPuzzleUI : Control
             inner.OffsetTop    =  6;
             inner.OffsetRight  = -6;
             inner.OffsetBottom = -6;
-            inner.Color = HexTints[guess[i]];
+            inner.Color = _hexTints[guess[i]];
             container.AddChild(inner);
 
             var lbl = new Label();
             lbl.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
             lbl.HorizontalAlignment = HorizontalAlignment.Center;
             lbl.VerticalAlignment   = VerticalAlignment.Center;
-            lbl.Text = HexLabels[guess[i]];
+            lbl.Text = _hexLabels[guess[i]];
             lbl.AddThemeFontSizeOverride("font_size", 20);
             lbl.AddThemeColorOverride("font_color", ColorHexText);
             container.AddChild(lbl);
@@ -764,12 +800,12 @@ public partial class DecryptionPuzzleUI : Control
                 var valTween = CreateTween();
                 valTween.TweenCallback(Callable.From(() => lbl.Text = "##"));
                 valTween.TweenInterval(0.04f);
-                valTween.TweenCallback(Callable.From(() => lbl.Text = HexLabels[fakeValue]));
+                valTween.TweenCallback(Callable.From(() => lbl.Text = _hexLabels[fakeValue]));
                 // Also glitch the inner tint
                 var inner = container.GetChild<ColorRect>(1);
                 var innerTween = CreateTween();
                 innerTween.TweenProperty(inner, "color", glitchDark, 0.03f);
-                innerTween.TweenProperty(inner, "color", HexTints[fakeValue], 0.04f);
+                innerTween.TweenProperty(inner, "color", _hexTints[fakeValue], 0.04f);
             }
 
             // Position jitter on any lied slot
