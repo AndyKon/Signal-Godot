@@ -31,44 +31,44 @@ public static class RoomRegistry
         BgColor = new Color(0.15f, 0.2f, 0.4f),
         MidColor = new Color(0.2f, 0.3f, 0.15f),
         FgColor = new Color(0.3f, 0.15f, 0.15f),
-        EntryNarrative = "Systems initializing. Platform damage detected. Restoration directive active.",
+        EntryNarrative = "Pressure Lock Bay. Emergency power holding. Air is cycling.",
         DustCount = 6,
         HasEmergencyLights = true,
         HasViewport = true,
         Hotspots = new List<RoomHotspotDef>
         {
             new("main_terminal",
-                new Vector2(1400, 650), new Vector2(180, 120), RoomLayer.Mid,
+                new Vector2(1440, 680), new Vector2(180, 120), RoomLayer.Mid,
                 criticalPath: true,
                 action: new HotspotData
                 {
                     Type = HotspotType.Narration,
-                    ExamineText = "NEREUS PLATFORM OS v4.2.1\nBoot sequence complete.\nECHO unit sensor suite: active. Diagnostic scan [Shift].\nCrew status: evacuated. Platform status: seismic damage detected.\nDirective: restore critical subsystems.",
+                    ExamineText = "NEREUS PLATFORM OS v4.2.1 — ABYSS INSTALLATION\n\nPlatform sustained seismic damage at 02:14 UTC. Magnitude 4.2. Crew evacuated to emergency submersible per safety protocol.\n\nECHO unit assigned to system restoration. Sensor suite active — diagnostic scan [Shift].\n\nPriority: restore pressure equalization to access deeper sections.",
                     FlagToSet = "read_boot_message",
                     EvidenceToDiscover = "nereus_boot_message"
                 }),
 
             new("viewport",
-                new Vector2(1440, 280), new Vector2(260, 260), RoomLayer.Bg,
+                new Vector2(1900, 280), new Vector2(260, 260), RoomLayer.Bg,
                 criticalPath: false,
                 action: new HotspotData
                 {
                     Type = HotspotType.Examine,
-                    ExamineText = "Deep ocean. Bioluminescent organisms drift past the viewport. Hydrothermal vents glow in the distance. Peaceful.",
+                    ExamineText = "Deep water. Bioluminescent organisms. They move slowly — no urgency out there.",
                     EvidenceToDiscover = "exterior_view"
                 }),
 
             new("pressure_gauge",
-                new Vector2(700, 500), new Vector2(100, 80), RoomLayer.Mid,
+                new Vector2(600, 400), new Vector2(100, 80), RoomLayer.Mid,
                 criticalPath: false,
                 action: new HotspotData
                 {
                     Type = HotspotType.Examine,
-                    ExamineText = "Pressure readings. Sections 2 through 4 show fluctuations at 02:14 UTC. The pattern is irregular — not consistent with a single seismic event."
+                    ExamineText = "Sections 2 through 4: simultaneous pressure spike at 02:14. Symmetric across all three sections. Seismic waves propagate. They don't arrive simultaneously."
                 }),
 
             new("door_to_storage",
-                new Vector2(2500, 600), new Vector2(120, 220), RoomLayer.Mid,
+                new Vector2(2380, 700), new Vector2(120, 220), RoomLayer.Mid,
                 criticalPath: true,
                 action: new HotspotData
                 {
@@ -86,55 +86,55 @@ public static class RoomRegistry
         BgColor = new Color(0.08f, 0.10f, 0.18f),
         MidColor = new Color(0.10f, 0.13f, 0.22f),
         FgColor = new Color(0.05f, 0.07f, 0.12f),
-        EntryNarrative = "Storage bay. Dim lighting. Equipment racks line the walls.",
+        EntryNarrative = "Storage bay. Dim. Everything accounted for.",
         DustCount = 4,
         HasEmergencyLights = true,
         HasViewport = false,
         Hotspots = new List<RoomHotspotDef>
         {
             new("locked_terminal",
-                new Vector2(800, 550), new Vector2(160, 120), RoomLayer.Mid,
+                new Vector2(900, 550), new Vector2(160, 120), RoomLayer.Mid,
                 criticalPath: false,
                 action: new HotspotData
                 {
                     Type = HotspotType.Terminal,
-                    ExamineText = "Platform seismic sensors recorded a magnitude 4.2 event at 02:14 UTC. Origin point consistent with subsurface geological activity. No structural damage detected. Emergency systems responded within normal parameters.",
+                    ExamineText = "SEISMIC EVENT LOG — 02:14 UTC\n\nMagnitude 4.2. Subsurface origin. Consistent with geological activity. Pressure lock closure sequence initiated at 02:13. Auto-log: predictive safety protocols.\n\nNo structural compromise detected.",
                     FlagToSet = "read_seismic_report",
                     EvidenceToDiscover = "seismic_report"
                 },
                 requiresPuzzle: true),
 
             new("equipment_locker",
-                new Vector2(1600, 450), new Vector2(120, 140), RoomLayer.Mid,
+                new Vector2(2100, 450), new Vector2(120, 140), RoomLayer.Mid,
                 criticalPath: false,
                 action: new HotspotData
                 {
                     Type = HotspotType.Examine,
-                    ExamineText = "Standard maintenance equipment. Wrenches, sealant, diagnostic cables. Everything in its place. Nothing unusual."
+                    ExamineText = "Standard maintenance loadout. Sealant tubes factory-sealed."
                 }),
 
             new("keycard",
-                new Vector2(1200, 900), new Vector2(80, 60), RoomLayer.Fg,
+                new Vector2(1400, 800), new Vector2(80, 60), RoomLayer.Fg,
                 criticalPath: true,
                 action: new HotspotData
                 {
                     Type = HotspotType.PickUp,
-                    ExamineText = "A keycard on the floor, half under the shelf. Power Junction access.",
+                    ExamineText = "Keycard. Power Junction access. On the floor.",
                     ItemToGrant = "keycard_power_junction",
                     FlagToSet = "picked_up_power_keycard"
                 }),
 
             new("emergency_kit",
-                new Vector2(400, 800), new Vector2(100, 70), RoomLayer.Fg,
+                new Vector2(560, 1100), new Vector2(100, 70), RoomLayer.Fg,
                 criticalPath: false,
                 action: new HotspotData
                 {
                     Type = HotspotType.Examine,
-                    ExamineText = "Emergency kit. Sealed, unopened. Nobody used it."
+                    ExamineText = "Sealed. Unopened."
                 }),
 
             new("door_to_control",
-                new Vector2(200, 600), new Vector2(120, 220), RoomLayer.Mid,
+                new Vector2(500, 700), new Vector2(120, 220), RoomLayer.Mid,
                 criticalPath: true,
                 action: new HotspotData
                 {
@@ -143,7 +143,7 @@ public static class RoomRegistry
                 }),
 
             new("door_to_power",
-                new Vector2(2600, 600), new Vector2(120, 220), RoomLayer.Mid,
+                new Vector2(2380, 700), new Vector2(120, 220), RoomLayer.Mid,
                 criticalPath: true,
                 action: new HotspotData
                 {
@@ -169,7 +169,7 @@ public static class RoomRegistry
         Hotspots = new List<RoomHotspotDef>
         {
             new("power_console",
-                new Vector2(1400, 550), new Vector2(200, 140), RoomLayer.Mid,
+                new Vector2(1440, 650), new Vector2(200, 140), RoomLayer.Mid,
                 criticalPath: true,
                 action: new HotspotData
                 {
@@ -179,7 +179,7 @@ public static class RoomRegistry
                 }),
 
             new("exposed_wiring",
-                new Vector2(900, 350), new Vector2(140, 100), RoomLayer.Mid,
+                new Vector2(650, 350), new Vector2(140, 100), RoomLayer.Mid,
                 criticalPath: false,
                 action: new HotspotData
                 {
@@ -188,7 +188,7 @@ public static class RoomRegistry
                 }),
 
             new("warning_sign",
-                new Vector2(1800, 180), new Vector2(160, 60), RoomLayer.Bg,
+                new Vector2(2100, 250), new Vector2(160, 60), RoomLayer.Bg,
                 criticalPath: false,
                 action: new HotspotData
                 {
@@ -197,7 +197,7 @@ public static class RoomRegistry
                 }),
 
             new("door_to_storage",
-                new Vector2(200, 600), new Vector2(120, 220), RoomLayer.Mid,
+                new Vector2(500, 700), new Vector2(120, 220), RoomLayer.Mid,
                 criticalPath: true,
                 action: new HotspotData
                 {

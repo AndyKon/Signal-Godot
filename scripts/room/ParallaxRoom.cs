@@ -61,6 +61,7 @@ public partial class ParallaxRoom : Control
             _viewportSize.Y * CanvasHeightRatio);
 
         BuildLayers();
+        PlaceVisualElements();
         PlaceHotspots();
         SpawnAtmosphere();
         CheckEntryNarrative();
@@ -106,6 +107,125 @@ public partial class ParallaxRoom : Control
 
         AddChild(layer);
         return layer;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Visual elements (programmatic shapes at hotspot positions)
+    // ─────────────────────────────────────────────────────────────────────
+
+    private void PlaceVisualElements()
+    {
+        foreach (var def in _roomDef.Hotspots)
+        {
+            var parentLayer = def.Layer switch
+            {
+                RoomLayer.Bg => _bgLayer,
+                RoomLayer.Mid => _midLayer,
+                RoomLayer.Fg => _fgLayer,
+                _ => _midLayer
+            };
+
+            var type = def.Action.Type;
+            string id = def.Id;
+
+            if (type == HotspotType.Door)
+            {
+                AddDoorVisual(parentLayer, def.Position);
+            }
+            else if (type == HotspotType.Terminal || type == HotspotType.Narration)
+            {
+                AddTerminalVisual(parentLayer, def.Position);
+            }
+            else if (id.Contains("viewport"))
+            {
+                AddViewportVisual(parentLayer, def.Position);
+            }
+            else if (id.Contains("wiring") || id.Contains("pipe"))
+            {
+                AddPipeVisual(parentLayer, def.Position);
+            }
+        }
+    }
+
+    private static void AddTerminalVisual(Control layer, Vector2 pos)
+    {
+        // Dark fill
+        var fill = new ColorRect();
+        fill.Size = new Vector2(120, 80);
+        fill.Position = pos - fill.Size / 2f;
+        fill.Color = new Color(0.05f, 0.12f, 0.08f, 0.9f);
+        fill.MouseFilter = MouseFilterEnum.Ignore;
+        layer.AddChild(fill);
+
+        // Green border (4 thin rects)
+        const float b = 2f;
+        AddBorderRect(layer, new Vector2(pos.X - 60, pos.Y - 40), new Vector2(120, b)); // top
+        AddBorderRect(layer, new Vector2(pos.X - 60, pos.Y + 40 - b), new Vector2(120, b)); // bottom
+        AddBorderRect(layer, new Vector2(pos.X - 60, pos.Y - 40), new Vector2(b, 80)); // left
+        AddBorderRect(layer, new Vector2(pos.X + 60 - b, pos.Y - 40), new Vector2(b, 80)); // right
+    }
+
+    private static void AddBorderRect(Control layer, Vector2 pos, Vector2 size)
+    {
+        var rect = new ColorRect();
+        rect.Size = size;
+        rect.Position = pos;
+        rect.Color = new Color(0f, 0.8f, 0.4f, 0.7f);
+        rect.MouseFilter = MouseFilterEnum.Ignore;
+        layer.AddChild(rect);
+    }
+
+    private static void AddDoorVisual(Control layer, Vector2 pos)
+    {
+        // Tall rectangle
+        var door = new ColorRect();
+        door.Size = new Vector2(60, 180);
+        door.Position = pos - new Vector2(30, 90);
+        door.Color = new Color(0.12f, 0.14f, 0.18f, 0.85f);
+        door.MouseFilter = MouseFilterEnum.Ignore;
+        layer.AddChild(door);
+
+        // Green indicator dot at top
+        var dot = new ColorRect();
+        dot.Size = new Vector2(8, 8);
+        dot.Position = pos - new Vector2(4, 80);
+        dot.Color = new Color(0f, 0.9f, 0.4f, 0.9f);
+        dot.MouseFilter = MouseFilterEnum.Ignore;
+        layer.AddChild(dot);
+    }
+
+    private static void AddViewportVisual(Control layer, Vector2 pos)
+    {
+        // Approximate circle with a large square + smaller inner square
+        var outer = new ColorRect();
+        outer.Size = new Vector2(100, 100);
+        outer.Position = pos - new Vector2(50, 50);
+        outer.Color = new Color(0.05f, 0.1f, 0.2f, 0.8f);
+        outer.MouseFilter = MouseFilterEnum.Ignore;
+        layer.AddChild(outer);
+
+        var inner = new ColorRect();
+        inner.Size = new Vector2(80, 80);
+        inner.Position = pos - new Vector2(40, 40);
+        inner.Color = new Color(0.02f, 0.06f, 0.15f, 0.9f);
+        inner.MouseFilter = MouseFilterEnum.Ignore;
+        layer.AddChild(inner);
+
+        // Border
+        AddBorderRect(layer, pos - new Vector2(50, 50), new Vector2(100, 2));
+        AddBorderRect(layer, pos - new Vector2(50, -48), new Vector2(100, 2));
+        AddBorderRect(layer, pos - new Vector2(50, 50), new Vector2(2, 100));
+        AddBorderRect(layer, pos - new Vector2(-48, 50), new Vector2(2, 100));
+    }
+
+    private static void AddPipeVisual(Control layer, Vector2 pos)
+    {
+        var pipe = new ColorRect();
+        pipe.Size = new Vector2(20, 200);
+        pipe.Position = pos - new Vector2(10, 100);
+        pipe.Color = new Color(0.15f, 0.18f, 0.2f, 0.75f);
+        pipe.MouseFilter = MouseFilterEnum.Ignore;
+        layer.AddChild(pipe);
     }
 
     // ─────────────────────────────────────────────────────────────────────
