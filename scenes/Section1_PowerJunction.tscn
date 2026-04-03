@@ -2,6 +2,6 @@
 
 [ext_resource type="Script" path="res://scripts/room/ParallaxRoomLoader.cs" id="1"]
 
-[node name="PowerJunction" type="Node2D"]
+[node name="PowerJunction" type="Control"]
 script = ExtResource("1")
 RoomId = "section1_power_junction"

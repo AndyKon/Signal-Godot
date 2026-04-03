@@ -10,7 +10,7 @@ namespace Signal.Room;
 /// Base class for parallax rooms. Builds three depth layers from a RoomDefinition,
 /// handles cursor-driven 2D panning, hotspot placement, scan reveal, and atmosphere.
 /// </summary>
-public partial class ParallaxRoom : Node2D
+public partial class ParallaxRoom : Control
 {
     // ── Parallax config ───────────────────────────────────────────────────
     private const float CanvasWidthRatio = 1.5f;   // 150% of viewport
@@ -53,6 +53,7 @@ public partial class ParallaxRoom : Node2D
             return;
         }
 
+        SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         _viewportSize = GetViewportRect().Size;
         _canvasSize = new Vector2(
             _viewportSize.X * CanvasWidthRatio,
@@ -79,8 +80,10 @@ public partial class ParallaxRoom : Node2D
         _midLayer = CreateLayer("MidLayer", _roomDef.MidColor, offset);
         _fgLayer = CreateLayer("FgLayer", _roomDef.FgColor, offset);
 
-        // Fg layer should not block mouse input to mid/bg hotspots
-        _fgLayer.MouseFilter = Control.MouseFilterEnum.Ignore;
+        // All layers pass through mouse to hotspots below
+        _bgLayer.MouseFilter = MouseFilterEnum.Pass;
+        _midLayer.MouseFilter = MouseFilterEnum.Pass;
+        _fgLayer.MouseFilter = MouseFilterEnum.Ignore;
     }
 
     private Control CreateLayer(string name, Color color, Vector2 baseOffset)
