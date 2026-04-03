@@ -50,6 +50,9 @@ public partial class InteractionManager : Node
             GameLog.FlagSet(action.FlagToSet);
         }
 
+        if (!string.IsNullOrEmpty(action.EvidenceToDiscover))
+            Evidence.EvidenceManager.Instance?.Discover(action.EvidenceToDiscover);
+
         if (!string.IsNullOrEmpty(action.ItemToGrant))
             InventoryManager.Instance?.AddItem(action.ItemToGrant);
 

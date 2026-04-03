@@ -19,6 +19,7 @@ public partial class HotspotData : Resource
     [Export] public string ItemToGrant { get; set; } = "";
     [Export] public string ItemToConsume { get; set; } = "";
     [Export] public string FlagToSet { get; set; } = "";
+    [Export] public string EvidenceToDiscover { get; set; } = "";
     [Export] public string TargetScene { get; set; } = "";
     [Export] public bool IsNewSection { get; set; }
     [Export] public string NarrativeEntryId { get; set; } = "";
