@@ -8,6 +8,9 @@ namespace Signal.Tests;
 /// </summary>
 public partial class AutotestBootstrap : Node
 {
+    private bool _loadEvidence;
+    private bool _evidenceLoaded;
+
     public override void _Ready()
     {
         var args = OS.GetCmdlineUserArgs();
@@ -32,11 +35,22 @@ public partial class AutotestBootstrap : Node
 
             if (arg == "--evidence-test")
             {
-                // Pre-discover a spread of evidence entries for UI testing
-                CallDeferred(nameof(LoadEvidenceTestData));
-                Core.GameLog.Event("Test", "Evidence test data loading — press J to open web");
-                return;
+                _loadEvidence = true;
+                Core.GameLog.Event("Test", "Evidence test mode — data loads after scene ready");
+                // Don't return — let other args process too
             }
+        }
+    }
+
+    public override void _Process(double delta)
+    {
+        // Load evidence after a scene is active (NewGame resets state)
+        if (_loadEvidence && !_evidenceLoaded && Evidence.EvidenceManager.Instance != null
+            && Core.GameManager.Instance?.State != null
+            && GetTree().CurrentScene?.Name != "MainMenu")
+        {
+            _evidenceLoaded = true;
+            LoadEvidenceTestData();
         }
     }
 
