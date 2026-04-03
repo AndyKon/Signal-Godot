@@ -25,10 +25,10 @@ public partial class DecryptionTestHarness : Control
     private Label _configLabel;
 
     // Current config
-    private int _cfgSlots = 4, _cfgValues = 6, _cfgMaxLies = 0;
+    private int _cfgSlots = 4, _cfgValues = 6, _cfgMaxLies = 1;
     private int _cfgReplayMax = 0;
     private float _cfgReplayChance = 0f;
-    private bool _cfgRepeats = false, _cfgFeedbackLies = false, _cfgValueLies = false;
+    private bool _cfgRepeats = true, _cfgFeedbackLies = true, _cfgValueLies = true;
 
     public override void _Ready()
     {
@@ -115,7 +115,7 @@ public partial class DecryptionTestHarness : Control
         _spMaxLies = AddSpinRow(vbox, "Max Lies/Round", 0, 4, _cfgMaxLies);
         _cbFeedbackLies = AddCheckRow(vbox, "Feedback Lies", _cfgFeedbackLies);
         _cbValueLies = AddCheckRow(vbox, "Value Swap Lies", _cfgValueLies);
-        _spTellDelay = AddSpinRow(vbox, "Tell Delay (ms)", 100, 2000, 300, 100);
+        _spTellDelay = AddSpinRow(vbox, "Tell Delay (ms)", 100, 2000, 800, 100);
         _spReplayChance = AddSpinRow(vbox, "Replay Chance %", 0, 100, (int)(_cfgReplayChance * 100), 10);
         _spReplayMax = AddSpinRow(vbox, "Replay Max/Cycle", 0, 4, _cfgReplayMax);
 
