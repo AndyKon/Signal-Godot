@@ -270,7 +270,7 @@ public partial class DecryptionTestHarness : Control
         UpdateConfigLabel();
         StartPuzzle();
 
-        string config = $"{_cfgSlots}s/{_cfgValues}v rep={_cfgRepeats} lies={_cfgMaxLies} fb={_cfgFeedbackLies} val={_cfgValueLies} tell={_spTellDelay.Value}ms RC={_cfgReplayChance:F0} RM={_cfgReplayMax}";
+        string config = $"{_cfgSlots}s/{_cfgValues}v rep={_cfgRepeats} lies={_cfgMaxLies} fb={_cfgFeedbackLies} val={_cfgValueLies} tell={_spTellDelay.Value}ms hist={_spHistoryLimit.Value} RC={_cfgReplayChance:F0} RM={_cfgReplayMax}";
         GameLog.Event("Test", $"Config applied: {config}");
     }
 
