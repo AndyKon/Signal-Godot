@@ -27,9 +27,10 @@ public static class RoomRegistry
         Id = "section1_pressure_control",
         DisplayName = "Pressure Lock Control",
         Section = 1,
-        BgColor = new Color(0.08f, 0.12f, 0.22f),
-        MidColor = new Color(0.12f, 0.16f, 0.28f),
-        FgColor = new Color(0.06f, 0.08f, 0.14f),
+        // DEBUG: bright colors to verify layer rendering
+        BgColor = new Color(0.15f, 0.2f, 0.4f),
+        MidColor = new Color(0.2f, 0.3f, 0.15f),
+        FgColor = new Color(0.3f, 0.15f, 0.15f),
         EntryNarrative = "Systems initializing. Platform damage detected. Restoration directive active.",
         DustCount = 6,
         HasEmergencyLights = true,

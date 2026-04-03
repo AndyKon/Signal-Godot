@@ -76,17 +76,17 @@ public partial class ParallaxRoom : Control
         // Offset so canvas is centered on viewport
         var offset = (_canvasSize - _viewportSize) / -2f;
 
-        _bgLayer = CreateLayer("BgLayer", _roomDef.BgColor, offset);
-        _midLayer = CreateLayer("MidLayer", _roomDef.MidColor, offset);
-        _fgLayer = CreateLayer("FgLayer", _roomDef.FgColor, offset);
+        _bgLayer = CreateLayer("BgLayer", _roomDef.BgColor, offset, opaqueFill: true);
+        _midLayer = CreateLayer("MidLayer", _roomDef.MidColor, offset, opaqueFill: false);
+        _fgLayer = CreateLayer("FgLayer", _roomDef.FgColor, offset, opaqueFill: false);
 
-        // All layers pass through mouse to hotspots below
-        _bgLayer.MouseFilter = MouseFilterEnum.Pass;
-        _midLayer.MouseFilter = MouseFilterEnum.Pass;
+        // All layers must ignore mouse so Area2D hotspots receive physics input
+        _bgLayer.MouseFilter = MouseFilterEnum.Ignore;
+        _midLayer.MouseFilter = MouseFilterEnum.Ignore;
         _fgLayer.MouseFilter = MouseFilterEnum.Ignore;
     }
 
-    private Control CreateLayer(string name, Color color, Vector2 baseOffset)
+    private Control CreateLayer(string name, Color color, Vector2 baseOffset, bool opaqueFill)
     {
         var layer = new Control();
         layer.Name = name;
@@ -94,11 +94,14 @@ public partial class ParallaxRoom : Control
         layer.Size = _canvasSize;
         layer.MouseFilter = Control.MouseFilterEnum.Ignore;
 
-        var bg = new ColorRect();
-        bg.Size = _canvasSize;
-        bg.Color = color;
-        bg.MouseFilter = Control.MouseFilterEnum.Ignore;
-        layer.AddChild(bg);
+        if (opaqueFill)
+        {
+            var bg = new ColorRect();
+            bg.Size = _canvasSize;
+            bg.Color = color;
+            bg.MouseFilter = Control.MouseFilterEnum.Ignore;
+            layer.AddChild(bg);
+        }
 
         AddChild(layer);
         return layer;
