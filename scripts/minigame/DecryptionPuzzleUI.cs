@@ -78,6 +78,9 @@ public partial class DecryptionPuzzleUI : Control
     private List<Label[]>     _historySlotLabels = new();
     private List<ColorRect[]> _historyDotBgs     = new();
 
+    // ── Tell timing ─────────────────────────────────────────────────────────
+    private float _tellDelay = 0.3f; // seconds truth is shown before glitch (configurable)
+
     // ── Animation state machine ───────────────────────────────────────────────
     private enum AnimState { Idle, Replaying, ShowingNew }
     private AnimState _animState = AnimState.Idle;
@@ -183,6 +186,9 @@ public partial class DecryptionPuzzleUI : Control
     }
 
     /// <summary>Start a puzzle with fully custom parameters.</summary>
+    /// <summary>Set how long the true value is visible before the glitch overwrite (seconds).</summary>
+    public void SetTellDelay(float seconds) => _tellDelay = Mathf.Clamp(seconds, 0.1f, 2.0f);
+
     public void StartCustomPuzzle(int slots, int values, bool repeats,
         int maxLies, bool feedbackLies, bool valueLies,
         float replayChance, int replayMax, int seed = -1)
@@ -720,7 +726,7 @@ public partial class DecryptionPuzzleUI : Control
         var tween = CreateTween();
 
         // Hold truth for a moment — looks normal
-        tween.TweenInterval(0.3f);
+        tween.TweenInterval(_tellDelay);
 
         // Glitch burst: rapid flicker between truth, static, lie
         tween.TweenProperty(slotBg, "color", glitchWhite, 0.02f);
@@ -733,13 +739,13 @@ public partial class DecryptionPuzzleUI : Control
 
         // Sync the feedback dot
         var dotTween = CreateTween();
-        dotTween.TweenInterval(0.3f);
+        dotTween.TweenInterval(_tellDelay);
         dotTween.TweenProperty(dotBg, "color", glitchWhite, 0.02f);
         dotTween.TweenProperty(dotBg, "color", lieColor, 0.06f);
 
         // Position jitter (parallel)
         var shakeTween = CreateTween();
-        shakeTween.TweenInterval(0.3f);
+        shakeTween.TweenInterval(_tellDelay);
         shakeTween.TweenProperty(container, "position", originalPos + new Vector2(4, -1), 0.02f);
         shakeTween.TweenProperty(container, "position", originalPos + new Vector2(-3, 2), 0.02f);
         shakeTween.TweenProperty(container, "position", originalPos + new Vector2(2, -1), 0.02f);
@@ -833,7 +839,7 @@ public partial class DecryptionPuzzleUI : Control
 
             // After pause, glitch the label and inner color to fake
             var labelTween = CreateTween();
-            labelTween.TweenInterval(0.3f);
+            labelTween.TweenInterval(_tellDelay);
             labelTween.TweenCallback(Callable.From(() => {
                 lbl.Text = "##";
             }));

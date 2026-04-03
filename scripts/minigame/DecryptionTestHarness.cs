@@ -20,7 +20,7 @@ public partial class DecryptionTestHarness : Control
     private PanelContainer _configPanel;
     private bool _configVisible = true;
     private SpinBox _spSlots, _spValues, _spMaxLies;
-    private SpinBox _spReplayChance, _spReplayMax;
+    private SpinBox _spReplayChance, _spReplayMax, _spTellDelay;
     private CheckButton _cbRepeats, _cbFeedbackLies, _cbValueLies;
     private Label _configLabel;
 
@@ -115,6 +115,7 @@ public partial class DecryptionTestHarness : Control
         _spMaxLies = AddSpinRow(vbox, "Max Lies/Round", 0, 4, _cfgMaxLies);
         _cbFeedbackLies = AddCheckRow(vbox, "Feedback Lies", _cfgFeedbackLies);
         _cbValueLies = AddCheckRow(vbox, "Value Swap Lies", _cfgValueLies);
+        _spTellDelay = AddSpinRow(vbox, "Tell Delay (ms)", 100, 2000, 300, 100);
         _spReplayChance = AddSpinRow(vbox, "Replay Chance %", 0, 100, (int)(_cfgReplayChance * 100), 10);
         _spReplayMax = AddSpinRow(vbox, "Replay Max/Cycle", 0, 4, _cfgReplayMax);
 
@@ -258,10 +259,12 @@ public partial class DecryptionTestHarness : Control
         _totalGuesses = 0;
         _resultsLabel.Text = "  Completed: 0 | Avg guesses: -- | Avg time: --";
 
+        _puzzleUI.SetTellDelay((float)_spTellDelay.Value / 1000f);
+
         UpdateConfigLabel();
         StartPuzzle();
 
-        string config = $"{_cfgSlots}s/{_cfgValues}v rep={_cfgRepeats} lies={_cfgMaxLies} fb={_cfgFeedbackLies} val={_cfgValueLies} RC={_cfgReplayChance:F0} RM={_cfgReplayMax}";
+        string config = $"{_cfgSlots}s/{_cfgValues}v rep={_cfgRepeats} lies={_cfgMaxLies} fb={_cfgFeedbackLies} val={_cfgValueLies} tell={_spTellDelay.Value}ms RC={_cfgReplayChance:F0} RM={_cfgReplayMax}";
         GameLog.Event("Test", $"Config applied: {config}");
     }
 
