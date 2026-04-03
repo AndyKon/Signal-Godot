@@ -4,80 +4,271 @@ using Signal.Core;
 namespace Signal.Minigame;
 
 /// <summary>
-/// Standalone test harness for the Mastermind decryption puzzle.
-/// Controls: F1-F6 = section, Space = new puzzle (same section), Esc = quit
+/// Standalone test harness with debug config panel.
+/// Tab toggles the config panel. Adjust parameters and hit Apply.
+/// Presets available via F1-F6. Space = new puzzle with same config.
 /// </summary>
 public partial class DecryptionTestHarness : Control
 {
     private DecryptionPuzzleUI _puzzleUI;
-    private Label _infoLabel;
     private Label _resultsLabel;
     private int _completedCount;
     private float _totalTime;
     private int _totalGuesses;
-    private int _currentSection = 1;
+
+    // ── Debug config ──────────────────────────────────────────────────────────
+    private PanelContainer _configPanel;
+    private bool _configVisible = true;
+    private SpinBox _spSlots, _spValues, _spFeedbackLies, _spValueLies;
+    private SpinBox _spReplayChance, _spReplayMax;
+    private CheckButton _cbRepeats;
+    private Label _configLabel;
+
+    // Current config
+    private int _cfgSlots = 4, _cfgValues = 6, _cfgFeedbackLies = 0, _cfgValueLies = 0;
+    private int _cfgReplayMax = 0;
+    private float _cfgReplayChance = 0f;
+    private bool _cfgRepeats = false;
 
     public override void _Ready()
     {
         var bg = new ColorRect();
         bg.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        bg.Color = new Color(0.02f, 0.03f, 0.05f);
+        bg.Color = new Color(0.0f, 0.0f, 0.02f);
         AddChild(bg);
 
-        var root = new VBoxContainer();
-        root.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        root.AddThemeConstantOverride("separation", 4);
-        var rootMargin = new MarginContainer();
-        rootMargin.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        rootMargin.AddThemeConstantOverride("margin_left", 12);
-        rootMargin.AddThemeConstantOverride("margin_right", 12);
-        rootMargin.AddThemeConstantOverride("margin_top", 8);
-        rootMargin.AddThemeConstantOverride("margin_bottom", 8);
-        rootMargin.AddChild(root);
-        AddChild(rootMargin);
+        // Main layout: config panel on left, puzzle on right
+        var hbox = new HBoxContainer();
+        hbox.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        hbox.AddThemeConstantOverride("separation", 0);
+        AddChild(hbox);
 
-        _infoLabel = new Label();
-        _infoLabel.AddThemeFontSizeOverride("font_size", 14);
-        _infoLabel.AddThemeColorOverride("font_color", new Color(0.4f, 0.4f, 0.5f));
-        UpdateInfoLabel();
-        root.AddChild(_infoLabel);
+        // ── Config panel ──────────────────────────────────────────────────────
+        BuildConfigPanel(hbox);
+
+        // ── Puzzle area ───────────────────────────────────────────────────────
+        var puzzleArea = new VBoxContainer();
+        puzzleArea.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        puzzleArea.AddThemeConstantOverride("separation", 4);
+        hbox.AddChild(puzzleArea);
 
         _puzzleUI = new DecryptionPuzzleUI();
         _puzzleUI.SizeFlagsVertical = SizeFlags.ExpandFill;
         _puzzleUI.PuzzleCompleted += OnPuzzleCompleted;
         _puzzleUI.PuzzleCancelled += OnPuzzleCancelled;
-        root.AddChild(_puzzleUI);
+        puzzleArea.AddChild(_puzzleUI);
 
         _resultsLabel = new Label();
         _resultsLabel.AddThemeFontSizeOverride("font_size", 14);
-        _resultsLabel.AddThemeColorOverride("font_color", new Color(0.4f, 0.6f, 0.4f));
-        _resultsLabel.Text = "Completed: 0 | Avg guesses: -- | Avg time: --";
-        root.AddChild(_resultsLabel);
-
-        var hints = new Label();
-        hints.AddThemeFontSizeOverride("font_size", 12);
-        hints.AddThemeColorOverride("font_color", new Color(0.3f, 0.3f, 0.4f));
-        hints.Text = "F1-F6=Sections | F7=ValLie F8=FbLie F9=Both F10=Both5s F11=Fb+Replay F12=Everything | Space=New | Esc=Quit";
-        root.AddChild(hints);
+        _resultsLabel.AddThemeColorOverride("font_color", new Color(0.0f, 0.6f, 0.3f));
+        _resultsLabel.Text = "  Completed: 0 | Avg guesses: -- | Avg time: --";
+        puzzleArea.AddChild(_resultsLabel);
 
         // Check for --section N command line arg
         var args = OS.GetCmdlineUserArgs();
         for (int i = 0; i < args.Length - 1; i++)
         {
             if (args[i] == "--section" && int.TryParse(args[i + 1], out int sec) && sec >= 1 && sec <= 6)
-            {
-                _currentSection = sec;
-                UpdateInfoLabel();
-            }
+                ApplyPreset(sec);
         }
 
-        CallDeferred(MethodName.StartInitialPuzzle);
-        GameLog.Event("Test", $"Decryption test harness loaded (section {_currentSection})");
+        CallDeferred(MethodName.StartPuzzle);
+        GameLog.Event("Test", "Decryption test harness loaded");
     }
 
-    private void StartInitialPuzzle()
+    private void BuildConfigPanel(HBoxContainer parent)
     {
-        _puzzleUI.StartPuzzle(_currentSection);
+        _configPanel = new PanelContainer();
+        _configPanel.CustomMinimumSize = new Vector2(280, 0);
+        var panelStyle = new StyleBoxFlat();
+        panelStyle.BgColor = new Color(0.02f, 0.04f, 0.03f);
+        panelStyle.BorderColor = new Color(0.0f, 0.5f, 0.25f, 0.5f);
+        panelStyle.BorderWidthRight = 1;
+        panelStyle.ContentMarginLeft = 16;
+        panelStyle.ContentMarginRight = 16;
+        panelStyle.ContentMarginTop = 16;
+        panelStyle.ContentMarginBottom = 16;
+        _configPanel.AddThemeStyleboxOverride("panel", panelStyle);
+        parent.AddChild(_configPanel);
+
+        var vbox = new VBoxContainer();
+        vbox.AddThemeConstantOverride("separation", 10);
+        _configPanel.AddChild(vbox);
+
+        // Title
+        var title = new Label { Text = "PUZZLE CONFIG" };
+        title.AddThemeFontSizeOverride("font_size", 16);
+        title.AddThemeColorOverride("font_color", new Color(0.0f, 0.9f, 0.4f));
+        vbox.AddChild(title);
+
+        // Config summary
+        _configLabel = new Label();
+        _configLabel.AddThemeFontSizeOverride("font_size", 12);
+        _configLabel.AddThemeColorOverride("font_color", new Color(0.0f, 0.5f, 0.25f));
+        _configLabel.AutowrapMode = TextServer.AutowrapMode.Word;
+        vbox.AddChild(_configLabel);
+
+        // Spinboxes
+        _spSlots = AddSpinRow(vbox, "Slots", 2, 8, _cfgSlots);
+        _spValues = AddSpinRow(vbox, "Values", 2, 8, _cfgValues);
+        _cbRepeats = new CheckButton { Text = "Allow Repeats", ButtonPressed = _cfgRepeats };
+        _cbRepeats.AddThemeColorOverride("font_color", new Color(0.7f, 0.7f, 0.8f));
+        _cbRepeats.AddThemeFontSizeOverride("font_size", 13);
+        vbox.AddChild(_cbRepeats);
+        _spFeedbackLies = AddSpinRow(vbox, "Feedback Lies/Round", 0, 4, _cfgFeedbackLies);
+        _spValueLies = AddSpinRow(vbox, "Value Lies/Round", 0, 4, _cfgValueLies);
+        _spReplayChance = AddSpinRow(vbox, "Replay Chance %", 0, 100, (int)(_cfgReplayChance * 100), 10);
+        _spReplayMax = AddSpinRow(vbox, "Replay Max/Cycle", 0, 4, _cfgReplayMax);
+
+        // Apply button
+        var applyBtn = new Button { Text = "[ APPLY & RESET ]" };
+        applyBtn.CustomMinimumSize = new Vector2(0, 40);
+        applyBtn.AddThemeFontSizeOverride("font_size", 14);
+        applyBtn.AddThemeColorOverride("font_color", new Color(0.0f, 0.9f, 0.4f));
+        var applyStyle = new StyleBoxFlat();
+        applyStyle.BgColor = new Color(0.0f, 0.1f, 0.05f);
+        applyStyle.BorderColor = new Color(0.0f, 0.7f, 0.3f);
+        applyStyle.SetBorderWidthAll(1);
+        applyBtn.AddThemeStyleboxOverride("normal", applyStyle);
+        var applyHover = new StyleBoxFlat();
+        applyHover.BgColor = new Color(0.0f, 0.2f, 0.1f);
+        applyHover.BorderColor = new Color(0.0f, 1.0f, 0.4f);
+        applyHover.SetBorderWidthAll(1);
+        applyBtn.AddThemeStyleboxOverride("hover", applyHover);
+        applyBtn.Pressed += OnApply;
+        vbox.AddChild(applyBtn);
+
+        // Separator
+        var sep = new ColorRect { CustomMinimumSize = new Vector2(0, 1) };
+        sep.Color = new Color(0.0f, 0.5f, 0.25f, 0.3f);
+        vbox.AddChild(sep);
+
+        // Presets
+        var presetLabel = new Label { Text = "PRESETS" };
+        presetLabel.AddThemeFontSizeOverride("font_size", 14);
+        presetLabel.AddThemeColorOverride("font_color", new Color(0.0f, 0.7f, 0.35f));
+        vbox.AddChild(presetLabel);
+
+        AddPresetButton(vbox, "S1: Baseline", 1);
+        AddPresetButton(vbox, "S2: + Repeats", 2);
+        AddPresetButton(vbox, "S3: + Value Swaps", 3);
+        AddPresetButton(vbox, "S4: + Feedback Lies", 4);
+        AddPresetButton(vbox, "S5H: Full Hostile", 5);
+        AddPresetButton(vbox, "S5C: Cooperative", 6);
+
+        // Hints
+        var hints = new Label { Text = "Tab = toggle panel\nSpace = new puzzle\nEsc = quit" };
+        hints.AddThemeFontSizeOverride("font_size", 11);
+        hints.AddThemeColorOverride("font_color", new Color(0.0f, 0.35f, 0.18f));
+        vbox.AddChild(hints);
+
+        UpdateConfigLabel();
+    }
+
+    private SpinBox AddSpinRow(VBoxContainer parent, string label, int min, int max, int value, int step = 1)
+    {
+        var row = new HBoxContainer();
+        row.AddThemeConstantOverride("separation", 8);
+        parent.AddChild(row);
+
+        var lbl = new Label { Text = label };
+        lbl.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        lbl.AddThemeFontSizeOverride("font_size", 13);
+        lbl.AddThemeColorOverride("font_color", new Color(0.7f, 0.7f, 0.8f));
+        row.AddChild(lbl);
+
+        var spin = new SpinBox();
+        spin.MinValue = min;
+        spin.MaxValue = max;
+        spin.Value = value;
+        spin.Step = step;
+        spin.CustomMinimumSize = new Vector2(70, 0);
+        spin.AddThemeFontSizeOverride("font_size", 13);
+        row.AddChild(spin);
+
+        return spin;
+    }
+
+    private void AddPresetButton(VBoxContainer parent, string text, int section)
+    {
+        var btn = new Button { Text = text };
+        btn.AddThemeFontSizeOverride("font_size", 12);
+        btn.AddThemeColorOverride("font_color", new Color(0.6f, 0.8f, 0.7f));
+        btn.Alignment = HorizontalAlignment.Left;
+        var style = new StyleBoxFlat();
+        style.BgColor = new Color(0.02f, 0.04f, 0.03f);
+        style.BorderColor = new Color(0.0f, 0.4f, 0.2f, 0.3f);
+        style.SetBorderWidthAll(1);
+        btn.AddThemeStyleboxOverride("normal", style);
+        var hover = new StyleBoxFlat();
+        hover.BgColor = new Color(0.0f, 0.12f, 0.06f);
+        hover.BorderColor = new Color(0.0f, 0.7f, 0.3f);
+        hover.SetBorderWidthAll(1);
+        btn.AddThemeStyleboxOverride("hover", hover);
+        btn.Pressed += () => ApplyPreset(section);
+        parent.AddChild(btn);
+    }
+
+    private void ApplyPreset(int section)
+    {
+        // Load preset values into spinboxes
+        var p = section switch
+        {
+            1 => (4, 6, false, 0, 0, 0f, 0),
+            2 => (4, 6, true,  0, 0, 0f, 0),
+            3 => (4, 6, true,  0, 1, 0f, 0),    // value-swap
+            4 => (4, 6, true,  1, 0, 0f, 0),    // feedback lie
+            5 => (6, 8, true,  1, 1, 0.8f, 2),  // everything
+            6 => (4, 6, false, 0, 0, 0f, 0),    // cooperative
+            _ => (4, 6, false, 0, 0, 0f, 0)
+        };
+
+        _spSlots.Value = p.Item1;
+        _spValues.Value = p.Item2;
+        _cbRepeats.ButtonPressed = p.Item3;
+        _spFeedbackLies.Value = p.Item4;
+        _spValueLies.Value = p.Item5;
+        _spReplayChance.Value = (int)(p.Item6 * 100);
+        _spReplayMax.Value = p.Item7;
+
+        OnApply();
+    }
+
+    private void OnApply()
+    {
+        _cfgSlots = (int)_spSlots.Value;
+        _cfgValues = (int)_spValues.Value;
+        _cfgRepeats = _cbRepeats.ButtonPressed;
+        _cfgFeedbackLies = (int)_spFeedbackLies.Value;
+        _cfgValueLies = (int)_spValueLies.Value;
+        _cfgReplayChance = (float)_spReplayChance.Value / 100f;
+        _cfgReplayMax = (int)_spReplayMax.Value;
+
+        _completedCount = 0;
+        _totalTime = 0;
+        _totalGuesses = 0;
+        _resultsLabel.Text = "  Completed: 0 | Avg guesses: -- | Avg time: --";
+
+        UpdateConfigLabel();
+        StartPuzzle();
+
+        string config = $"{_cfgSlots}s/{_cfgValues}v rep={_cfgRepeats} FL={_cfgFeedbackLies} VL={_cfgValueLies} RC={_cfgReplayChance:F0} RM={_cfgReplayMax}";
+        GameLog.Event("Test", $"Config applied: {config}");
+    }
+
+    private void UpdateConfigLabel()
+    {
+        _configLabel.Text = $"{_cfgSlots} slots, {_cfgValues} values" +
+            $"\nRepeats: {(_cfgRepeats ? "yes" : "no")}" +
+            $"\nFeedback lies: {_cfgFeedbackLies}/round" +
+            $"\nValue lies: {_cfgValueLies}/round" +
+            $"\nReplay: {_cfgReplayChance * 100:F0}% chance, max {_cfgReplayMax}";
+    }
+
+    private void StartPuzzle()
+    {
+        _puzzleUI.StartCustomPuzzle(_cfgSlots, _cfgValues, _cfgRepeats,
+            _cfgFeedbackLies, _cfgValueLies, _cfgReplayChance, _cfgReplayMax);
     }
 
     public override void _UnhandledInput(InputEvent @event)
@@ -86,45 +277,20 @@ public partial class DecryptionTestHarness : Control
 
         switch (key.Keycode)
         {
-            case Key.F1: _currentSection = 1; UpdateInfoLabel(); _puzzleUI.StartPuzzle(1); break;
-            case Key.F2: _currentSection = 2; UpdateInfoLabel(); _puzzleUI.StartPuzzle(2); break;
-            case Key.F3: _currentSection = 3; UpdateInfoLabel(); _puzzleUI.StartPuzzle(3); break;
-            case Key.F4: _currentSection = 4; UpdateInfoLabel(); _puzzleUI.StartPuzzle(4); break;
-            case Key.F5: _currentSection = 5; UpdateInfoLabel(); _puzzleUI.StartPuzzle(5); break;
-            case Key.F6: _currentSection = 6; UpdateInfoLabel(); _puzzleUI.StartPuzzle(6); break;
-            case Key.F7: _currentSection = 7; UpdateInfoLabel(); _puzzleUI.StartPuzzle(7); break;
-            case Key.F8: _currentSection = 8; UpdateInfoLabel(); _puzzleUI.StartPuzzle(8); break;
-            case Key.F9: _currentSection = 9; UpdateInfoLabel(); _puzzleUI.StartPuzzle(9); break;
-            case Key.F10: _currentSection = 10; UpdateInfoLabel(); _puzzleUI.StartPuzzle(10); break;
-            case Key.F11: _currentSection = 11; UpdateInfoLabel(); _puzzleUI.StartPuzzle(11); break;
-            case Key.F12: _currentSection = 12; UpdateInfoLabel(); _puzzleUI.StartPuzzle(12); break;
-            case Key.Space: _puzzleUI.StartPuzzle(_currentSection); break;
-            case Key.Escape: GetTree().Quit(); break;
-            default: return;
+            case Key.Tab:
+                _configVisible = !_configVisible;
+                _configPanel.Visible = _configVisible;
+                GetViewport().SetInputAsHandled();
+                break;
+            case Key.Space:
+                StartPuzzle();
+                GetViewport().SetInputAsHandled();
+                break;
+            case Key.Escape:
+                GetTree().Quit();
+                GetViewport().SetInputAsHandled();
+                break;
         }
-
-        GetViewport().SetInputAsHandled();
-    }
-
-    private void UpdateInfoLabel()
-    {
-        string[] sections =
-        {
-            "",
-            "S1: 4s/6v no lies",
-            "S2: 4s/6v repeats",
-            "S3: 4s/6v 1 value-swap",
-            "S4: 4s/6v 1 feedback lie",
-            "S5H: 6s/8v both lies + replay",
-            "S5C: 4s/6v cooperative",
-            "TEST: 4s/6v value-lie only",
-            "TEST: 4s/6v feedback-lie only",
-            "TEST: 4s/6v both lies (1 each)",
-            "TEST: 5s/6v both lies",
-            "TEST: 5s/6v feedback + replay",
-            "TEST: 6s/8v everything"
-        };
-        _infoLabel.Text = _currentSection < sections.Length ? sections[_currentSection] : "Unknown";
     }
 
     private void OnPuzzleCompleted(int guessCount, float timeSpent)
@@ -134,14 +300,16 @@ public partial class DecryptionTestHarness : Control
         _totalGuesses += guessCount;
         float avgTime = _totalTime / _completedCount;
         float avgGuesses = (float)_totalGuesses / _completedCount;
-        _resultsLabel.Text = $"Completed: {_completedCount} | Last: {guessCount} guesses in {timeSpent:F1}s | Avg: {avgGuesses:F1} guesses, {avgTime:F1}s";
-        GameLog.Event("Test", $"Decryption completed: {guessCount} guesses, {timeSpent:F1}s (avg: {avgGuesses:F1} guesses, {avgTime:F1}s over {_completedCount})");
+        _resultsLabel.Text = $"  Completed: {_completedCount} | Last: {guessCount} guesses in {timeSpent:F1}s | Avg: {avgGuesses:F1} guesses, {avgTime:F1}s";
 
-        GetTree().CreateTimer(2.0).Timeout += () => _puzzleUI.StartPuzzle(_currentSection);
+        string config = $"{_cfgSlots}s/{_cfgValues}v FL={_cfgFeedbackLies} VL={_cfgValueLies}";
+        GameLog.Event("Test", $"[{config}] Solved: {guessCount} guesses, {timeSpent:F1}s (avg: {avgGuesses:F1} guesses, {avgTime:F1}s over {_completedCount})");
+
+        GetTree().CreateTimer(2.0).Timeout += () => StartPuzzle();
     }
 
     private void OnPuzzleCancelled()
     {
-        _puzzleUI.StartPuzzle(_currentSection);
+        StartPuzzle();
     }
 }

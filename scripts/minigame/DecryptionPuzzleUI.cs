@@ -166,13 +166,6 @@ public partial class DecryptionPuzzleUI : Control
             4 => DecryptionPuzzle.CreateSection4(seed),
             5 => DecryptionPuzzle.CreateSection5Hostile(seed),
             6 => DecryptionPuzzle.CreateSection5Cooperative(seed),
-            // Test variants
-            7 => DecryptionPuzzle.CreateTestValueLieOnly(seed),
-            8 => DecryptionPuzzle.CreateTestFeedbackLieOnly(seed),
-            9 => DecryptionPuzzle.CreateTestBothLies(seed),
-            10 => DecryptionPuzzle.CreateTestBothLies5(seed),
-            11 => DecryptionPuzzle.CreateTestFeedbackPlusReplay(seed),
-            12 => DecryptionPuzzle.CreateTestEverything(seed),
             _ => DecryptionPuzzle.CreateSection1(seed)
         };
 
@@ -185,6 +178,29 @@ public partial class DecryptionPuzzleUI : Control
         _historyDotBgs.Clear();
 
         BuildUI(section);
+        ResetCurrentInput();
+        SetStatus("Enter your guess.");
+    }
+
+    /// <summary>Start a puzzle with fully custom parameters.</summary>
+    public void StartCustomPuzzle(int slots, int values, bool repeats,
+        int feedbackLies, int valueLies, float replayChance, int replayMax,
+        int seed = -1)
+    {
+        if (seed < 0) seed = (int)(Time.GetTicksMsec() % int.MaxValue);
+
+        _puzzle = new DecryptionPuzzle(slots, values, repeats, feedbackLies,
+            replayChance, replayMax, seed, valueLies);
+
+        _section = 0; // custom
+        _elapsed = 0f;
+        _active = true;
+        _animState = AnimState.Idle;
+        _historySlotBgs.Clear();
+        _historySlotLabels.Clear();
+        _historyDotBgs.Clear();
+
+        BuildUI(0);
         ResetCurrentInput();
         SetStatus("Enter your guess.");
     }
@@ -247,7 +263,9 @@ public partial class DecryptionPuzzleUI : Control
         root.AddChild(titleBar);
 
         _titleLabel = new Label();
-        _titleLabel.Text = $"> DECRYPTION TERMINAL // SECTION {section}";
+        _titleLabel.Text = section > 0
+            ? $"> DECRYPTION TERMINAL // SECTION {section}"
+            : $"> DECRYPTION TERMINAL // {_puzzle.SlotCount}s {_puzzle.ValueCount}v FL{_puzzle.LiesPerRound} VL{_puzzle.ValueLiesPerRound} R{_puzzle.ReplayLieChance:F0}";
         _titleLabel.AddThemeFontSizeOverride("font_size", 22);
         _titleLabel.AddThemeColorOverride("font_color", ColorTermText);
         titleBar.AddChild(_titleLabel);
