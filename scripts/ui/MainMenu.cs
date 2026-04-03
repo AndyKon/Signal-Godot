@@ -36,7 +36,7 @@ public partial class MainMenu : Control
         }
 
         GameManager.Instance.NewGame();
-        SceneLoader.Instance.LoadScene("Section1_Hub_Room1", isNewSection: true);
+        SceneLoader.Instance.LoadScene("Section1_PressureLockControl", isNewSection: true);
     }
 
     private void OnLoadGame()

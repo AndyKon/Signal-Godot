@@ -62,136 +62,16 @@ public partial class AutoPlaytest : Node
                 Check("State reset - no flags", GameManager.Instance.State.FlagCount == 0);
                 Check("State reset - no inventory", GameManager.Instance.State.Inventory.Count == 0);
                 Check("State reset - no powered sections", !GameManager.Instance.State.IsSectionPowered(1));
-                SceneLoader.Instance.LoadScene("Section1_Hub_Room1", isNewSection: true);
-                _timer = 1.0f; // Wait for scene load
-                break;
-
-            // === ROOM 1 TESTS ===
-            case 2:
-                Check("Scene is Room 1", GameManager.Instance.State.CurrentScene == "Section1_Hub_Room1");
-                Check("Auto-saved to slot 0", GameManager.Instance.SaveSystem.SlotExists(0));
-                break;
-
-            case 3:
-                // Find and click optional terminal first (to set flag for alt text test later)
-                var optTerminal = FindHotspot("OptionalTerminal");
-                Check("OptionalTerminal exists", optTerminal != null);
-                if (optTerminal != null)
-                {
-                    SimulateClick(optTerminal);
-                    _timer = 0.8f;
-                }
-                break;
-
-            case 4:
-                Check("found_hub_log_01 flag set", GameManager.Instance.State.HasFlag("found_hub_log_01"));
-                Check("Narrative is displaying", NarrativeManager.Instance.IsDisplaying);
-                // Dismiss narrative
-                DismissNarrative();
-                _timer = 0.5f;
-                break;
-
-            case 5:
-                Check("Narrative dismissed", !NarrativeManager.Instance.IsDisplaying);
-                // Now click intro terminal — should show alt text since we have found_hub_log_01
-                var introTerminal = FindHotspot("IntroTerminal");
-                Check("IntroTerminal exists", introTerminal != null);
-                if (introTerminal != null)
-                    SimulateClick(introTerminal);
-                _timer = 0.8f;
-                break;
-
-            case 6:
-                Check("Narrative showing after intro terminal", NarrativeManager.Instance.IsDisplaying);
-                // Can't easily check alt text content from here, but the log will show it
-                DismissNarrative();
-                _timer = 0.5f;
-                break;
-
-            // === TRANSITION TO ROOM 2 ===
-            case 7:
-                var door1 = FindHotspot("DoorToRoom2");
-                Check("DoorToRoom2 exists", door1 != null);
-                if (door1 != null)
-                    SimulateClick(door1);
-                _timer = 1.0f;
-                break;
-
-            case 8:
-                Check("Scene is Room 2", GameManager.Instance.State.CurrentScene == "Section1_Hub_Room2");
-                break;
-
-            // === ROOM 2: KEYCARD + LOCKED DOOR ===
-            case 9:
-                // Door to Room 3 should NOT be available (no keycard)
-                var lockedDoor = FindHotspot("DoorToRoom3");
-                Check("DoorToRoom3 exists", lockedDoor != null);
-                Check("DoorToRoom3 NOT available (no keycard)", lockedDoor != null && !lockedDoor.IsAvailable());
-                break;
-
-            case 10:
-                // Pick up keycard
-                var keycard = FindHotspot("KeycardPickup");
-                Check("KeycardPickup exists", keycard != null);
-                Check("KeycardPickup is available", keycard != null && keycard.IsAvailable());
-                if (keycard != null)
-                    SimulateClick(keycard);
-                _timer = 0.8f;
-                break;
-
-            case 11:
-                Check("keycard_hub in inventory", GameManager.Instance.State.HasItem("keycard_hub"));
-                Check("picked_up_hub_keycard flag set", GameManager.Instance.State.HasFlag("picked_up_hub_keycard"));
-                DismissNarrative();
-                _timer = 0.5f;
-                break;
-
-            case 12:
-                // Keycard should now be gone (blocked by flag)
-                var keycardGone = FindHotspot("KeycardPickup");
-                Check("KeycardPickup hidden after pickup", keycardGone == null || !keycardGone.IsAvailable());
-
-                // Door should now be available
-                var unlockedDoor = FindHotspot("DoorToRoom3");
-                Check("DoorToRoom3 now available (has keycard)", unlockedDoor != null && unlockedDoor.IsAvailable());
-                break;
-
-            // === TRANSITION TO ROOM 3 ===
-            case 13:
-                var door3 = FindHotspot("DoorToRoom3");
-                if (door3 != null)
-                    SimulateClick(door3);
-                _timer = 1.0f;
-                break;
-
-            case 14:
-                Check("Scene is Room 3", GameManager.Instance.State.CurrentScene == "Section1_Hub_Room3");
-                break;
-
-            // === ROOM 3: POWER CONSOLE ===
-            case 15:
-                var console = FindHotspot("PowerConsole");
-                Check("PowerConsole exists", console != null);
-                if (console != null)
-                    SimulateClick(console);
-                _timer = 0.8f;
-                break;
-
-            case 16:
-                Check("hub_power_restored flag set", GameManager.Instance.State.HasFlag("hub_power_restored"));
-                DismissNarrative();
-                _timer = 0.5f;
                 break;
 
             // === SAVE/LOAD TEST ===
-            case 17:
+            case 2:
                 GameLog.Event("Test", "--- Testing save/load ---");
                 GameManager.Instance.SaveToSlot(2);
                 Check("Saved to slot 2", GameManager.Instance.SaveSystem.SlotExists(2));
 
                 // Record current state
                 int flagCount = GameManager.Instance.State.FlagCount;
-                bool hasKeycard = GameManager.Instance.State.HasItem("keycard_hub");
                 string scene = GameManager.Instance.State.CurrentScene;
 
                 // Reset and reload
@@ -201,12 +81,11 @@ public partial class AutoPlaytest : Node
                 bool loaded = GameManager.Instance.LoadFromSlot(2);
                 Check("Load from slot 2 succeeded", loaded);
                 Check("Flags restored", GameManager.Instance.State.FlagCount == flagCount);
-                Check("Inventory restored", GameManager.Instance.State.HasItem("keycard_hub") == hasKeycard);
                 Check("Scene restored", GameManager.Instance.State.CurrentScene == scene);
                 break;
 
             // === ENDING EVALUATOR TEST ===
-            case 18:
+            case 3:
                 GameLog.Event("Test", "--- Testing ending evaluator ---");
                 var testState = new GameState();
                 testState.RegisterTotalOptionalFlags(10);
@@ -224,9 +103,8 @@ public partial class AutoPlaytest : Node
                 break;
 
             // === SAVE SLOT MANAGEMENT ===
-            case 19:
+            case 4:
                 GameLog.Event("Test", "--- Testing save slot management ---");
-                Check("Slot 0 exists (auto-save)", GameManager.Instance.SaveSystem.SlotExists(0));
                 Check("Slot 2 exists (manual save)", GameManager.Instance.SaveSystem.SlotExists(2));
                 Check("Slot 3 empty", !GameManager.Instance.SaveSystem.SlotExists(3));
                 Check("Slot -1 invalid", !GameManager.Instance.SaveSystem.SlotExists(-1));
@@ -236,38 +114,15 @@ public partial class AutoPlaytest : Node
                 Check("Slot 2 deleted", !GameManager.Instance.SaveSystem.SlotExists(2));
                 break;
 
-            // === BACKTRACKING TEST ===
-            case 20:
-                GameLog.Event("Test", "--- Testing backtracking ---");
-                // Reload state and go back to Room 2
-                GameManager.Instance.LoadFromSlot(0);
-                SceneLoader.Instance.LoadScene("Section1_Hub_Room2");
-                _timer = 1.0f;
-                break;
-
-            case 21:
-                Check("Backtrack to Room 2", GameManager.Instance.State.CurrentScene == "Section1_Hub_Room2");
-                // Go back to Room 1
-                var doorBack = FindHotspot("DoorToRoom1");
-                Check("DoorToRoom1 exists in Room 2", doorBack != null);
-                if (doorBack != null)
-                    SimulateClick(doorBack);
-                _timer = 1.0f;
-                break;
-
-            case 22:
-                Check("Backtrack to Room 1", GameManager.Instance.State.CurrentScene == "Section1_Hub_Room1");
-                break;
-
             // === REPORT ===
-            case 23:
+            case 5:
                 Report();
                 _done = true;
                 // Quit after report
                 _timer = 1.0f;
                 break;
 
-            case 24:
+            case 6:
                 GetTree().Quit();
                 break;
         }
