@@ -12,8 +12,9 @@ public class DecryptionPuzzle
     public int SlotCount { get; }
     public int ValueCount { get; }
     public bool AllowRepeats { get; }
-    public int LiesPerRound { get; }
-    public int ValueLiesPerRound { get; }
+    public int MaxLiesPerRound { get; }
+    public bool FeedbackLiesEnabled { get; }
+    public bool ValueLiesEnabled { get; }
     public float ReplayLieChance { get; }
     public int MaxReplayLiesPerCycle { get; }
 
@@ -26,17 +27,18 @@ public class DecryptionPuzzle
     public bool IsSolved => _solved;
     public int GuessesMade => _history.Count;
     public IReadOnlyList<GuessResult> History => _history;
-    public int[] Answer => _solved ? (int[])_answer.Clone() : null; // Only reveal after solved
+    public int[] Answer => _solved ? (int[])_answer.Clone() : null;
 
-    public DecryptionPuzzle(int slots, int values, bool allowRepeats, int liesPerRound,
-                            float replayLieChance, int maxReplayLiesPerCycle, int seed,
-                            int valueLiesPerRound = 0)
+    public DecryptionPuzzle(int slots, int values, bool allowRepeats,
+                            int maxLiesPerRound, bool feedbackLiesEnabled, bool valueLiesEnabled,
+                            float replayLieChance, int maxReplayLiesPerCycle, int seed)
     {
         SlotCount = slots;
         ValueCount = values;
         AllowRepeats = allowRepeats;
-        ValueLiesPerRound = valueLiesPerRound;
-        LiesPerRound = liesPerRound;
+        MaxLiesPerRound = maxLiesPerRound;
+        FeedbackLiesEnabled = feedbackLiesEnabled;
+        ValueLiesEnabled = valueLiesEnabled;
         ReplayLieChance = replayLieChance;
         MaxReplayLiesPerCycle = maxReplayLiesPerCycle;
 
@@ -117,30 +119,7 @@ public class DecryptionPuzzle
                 feedback[i] = SlotFeedback.NotPresent;
         }
 
-        // Apply NEREUS lies
-        var displayFeedback = (SlotFeedback[])feedback.Clone();
-        var liedSlots = new bool[SlotCount];
-
-        if (LiesPerRound > 0)
-        {
-            var candidateSlots = new List<int>();
-            for (int i = 0; i < SlotCount; i++) candidateSlots.Add(i);
-
-            int liesToApply = Math.Min(LiesPerRound, SlotCount);
-            for (int lie = 0; lie < liesToApply; lie++)
-            {
-                if (candidateSlots.Count == 0) break;
-                int idx = _rng.Next(candidateSlots.Count);
-                int slot = candidateSlots[idx];
-                candidateSlots.RemoveAt(idx);
-
-                // Invert the feedback
-                displayFeedback[slot] = InvertFeedback(feedback[slot]);
-                liedSlots[slot] = true;
-            }
-        }
-
-        // Check if solved
+        // Check if solved (before applying lies)
         bool allCorrect = true;
         for (int i = 0; i < SlotCount; i++)
         {
@@ -152,39 +131,52 @@ public class DecryptionPuzzle
         }
         _solved = allCorrect;
 
-        // Apply NEREUS value lies — swap displayed values in guess history
+        // Apply NEREUS lies — unified budget, random type per lie
+        var displayFeedback = (SlotFeedback[])feedback.Clone();
         var displayGuess = (int[])guess.Clone();
+        var liedSlots = new bool[SlotCount];
         var valueLiedSlots = new bool[SlotCount];
 
-        if (ValueLiesPerRound > 0 && !allCorrect)
+        if (MaxLiesPerRound > 0 && !allCorrect)
         {
-            var candidateSlots2 = new List<int>();
-            for (int i = 0; i < SlotCount; i++) candidateSlots2.Add(i);
+            // Build list of enabled lie types
+            var enabledTypes = new List<int>(); // 0 = feedback, 1 = value
+            if (FeedbackLiesEnabled) enabledTypes.Add(0);
+            if (ValueLiesEnabled) enabledTypes.Add(1);
 
-            int valueLiesToApply = Math.Min(ValueLiesPerRound, SlotCount);
-            for (int lie = 0; lie < valueLiesToApply; lie++)
+            if (enabledTypes.Count > 0)
             {
-                if (candidateSlots2.Count == 0) break;
-                int idx = _rng.Next(candidateSlots2.Count);
-                int slot = candidateSlots2[idx];
-                candidateSlots2.RemoveAt(idx);
+                var candidateSlots = new List<int>();
+                for (int i = 0; i < SlotCount; i++) candidateSlots.Add(i);
 
-                // Pick a different value than what was guessed
-                int original = guess[slot];
-                int swapped;
-                do { swapped = _rng.Next(ValueCount); } while (swapped == original);
-                displayGuess[slot] = swapped;
-                valueLiedSlots[slot] = true;
+                int liesToApply = Math.Min(MaxLiesPerRound, SlotCount);
+                for (int lie = 0; lie < liesToApply; lie++)
+                {
+                    if (candidateSlots.Count == 0) break;
+
+                    // Pick a random slot
+                    int idx = _rng.Next(candidateSlots.Count);
+                    int slot = candidateSlots[idx];
+                    candidateSlots.RemoveAt(idx);
+
+                    // Pick a random enabled lie type
+                    int lieType = enabledTypes[_rng.Next(enabledTypes.Count)];
+
+                    if (lieType == 0) // feedback lie
+                    {
+                        displayFeedback[slot] = InvertFeedback(feedback[slot]);
+                        liedSlots[slot] = true;
+                    }
+                    else // value lie
+                    {
+                        int original = guess[slot];
+                        int swapped;
+                        do { swapped = _rng.Next(ValueCount); } while (swapped == original);
+                        displayGuess[slot] = swapped;
+                        valueLiedSlots[slot] = true;
+                    }
+                }
             }
-        }
-
-        // When solved, show truth — NEREUS can't lie about a fully correct answer
-        if (allCorrect)
-        {
-            displayFeedback = (SlotFeedback[])feedback.Clone();
-            liedSlots = new bool[SlotCount];
-            displayGuess = (int[])guess.Clone();
-            valueLiedSlots = new bool[SlotCount];
         }
 
         var result = new GuessResult
@@ -254,68 +246,37 @@ public class DecryptionPuzzle
     }
 
     // --- Factory methods: game progression ---
+    // maxLies = total lie budget per round. Type chosen randomly from enabled types.
 
     public static DecryptionPuzzle CreateSection1(int seed) =>
-        new(slots: 4, values: 6, allowRepeats: false, liesPerRound: 0,
+        new(4, 6, allowRepeats: false, maxLiesPerRound: 0,
+            feedbackLiesEnabled: false, valueLiesEnabled: false,
             replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed);
 
     public static DecryptionPuzzle CreateSection2(int seed) =>
-        new(slots: 4, values: 6, allowRepeats: true, liesPerRound: 0,
+        new(4, 6, allowRepeats: true, maxLiesPerRound: 0,
+            feedbackLiesEnabled: false, valueLiesEnabled: false,
             replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed);
 
     public static DecryptionPuzzle CreateSection3(int seed) =>
-        new(slots: 4, values: 6, allowRepeats: true, liesPerRound: 0,
-            replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed,
-            valueLiesPerRound: 1);
+        new(4, 6, allowRepeats: true, maxLiesPerRound: 1,
+            feedbackLiesEnabled: false, valueLiesEnabled: true,
+            replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed);
 
     public static DecryptionPuzzle CreateSection4(int seed) =>
-        new(slots: 4, values: 6, allowRepeats: true, liesPerRound: 1,
+        new(4, 6, allowRepeats: true, maxLiesPerRound: 1,
+            feedbackLiesEnabled: true, valueLiesEnabled: false,
             replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed);
 
     public static DecryptionPuzzle CreateSection5Hostile(int seed) =>
-        new(slots: 6, values: 8, allowRepeats: true, liesPerRound: 1,
-            replayLieChance: 0.8f, maxReplayLiesPerCycle: 2, seed: seed,
-            valueLiesPerRound: 1);
+        new(6, 8, allowRepeats: true, maxLiesPerRound: 2,
+            feedbackLiesEnabled: true, valueLiesEnabled: true,
+            replayLieChance: 0.8f, maxReplayLiesPerCycle: 2, seed: seed);
 
     public static DecryptionPuzzle CreateSection5Cooperative(int seed) =>
-        new(slots: 4, values: 6, allowRepeats: false, liesPerRound: 0,
+        new(4, 6, allowRepeats: false, maxLiesPerRound: 0,
+            feedbackLiesEnabled: false, valueLiesEnabled: false,
             replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed);
-
-    // --- Test variants: accessible via F7-F12 in test harness ---
-
-    /// <summary>4 slots, value lie only (no feedback lie)</summary>
-    public static DecryptionPuzzle CreateTestValueLieOnly(int seed) =>
-        new(slots: 4, values: 6, allowRepeats: true, liesPerRound: 0,
-            replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed,
-            valueLiesPerRound: 1);
-
-    /// <summary>4 slots, feedback lie only (no value lie)</summary>
-    public static DecryptionPuzzle CreateTestFeedbackLieOnly(int seed) =>
-        new(slots: 4, values: 6, allowRepeats: true, liesPerRound: 1,
-            replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed);
-
-    /// <summary>4 slots, both lie types (1 each)</summary>
-    public static DecryptionPuzzle CreateTestBothLies(int seed) =>
-        new(slots: 4, values: 6, allowRepeats: true, liesPerRound: 1,
-            replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed,
-            valueLiesPerRound: 1);
-
-    /// <summary>5 slots, both lie types</summary>
-    public static DecryptionPuzzle CreateTestBothLies5(int seed) =>
-        new(slots: 5, values: 6, allowRepeats: true, liesPerRound: 1,
-            replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed,
-            valueLiesPerRound: 1);
-
-    /// <summary>5 slots, feedback lie + replay alters</summary>
-    public static DecryptionPuzzle CreateTestFeedbackPlusReplay(int seed) =>
-        new(slots: 5, values: 6, allowRepeats: true, liesPerRound: 1,
-            replayLieChance: 0.5f, maxReplayLiesPerCycle: 1, seed: seed);
-
-    /// <summary>6 slots, 8 vals, everything (S5H preview)</summary>
-    public static DecryptionPuzzle CreateTestEverything(int seed) =>
-        new(slots: 6, values: 8, allowRepeats: true, liesPerRound: 1,
-            replayLieChance: 0.8f, maxReplayLiesPerCycle: 2, seed: seed,
-            valueLiesPerRound: 1);
 }
 
 public enum SlotFeedback

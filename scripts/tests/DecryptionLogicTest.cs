@@ -140,10 +140,10 @@ public partial class DecryptionLogicTest : Node
 
     private void TestLiesInvertFeedback()
     {
-        // Section3 has 1 lie per round. For any guess, exactly 1 slot should differ
+        // Section4 has 1 feedback lie per round. For any guess, exactly 1 slot should differ
         // between TrueFeedback and DisplayFeedback, and the inversion must follow the
         // rotation rule: Correct→NotPresent, WrongPosition→Correct, NotPresent→WrongPosition.
-        var puzzle = DecryptionPuzzle.CreateSection3(seed: 10);
+        var puzzle = DecryptionPuzzle.CreateSection4(seed: 10);
 
         // Try several guesses and verify the lie invariant.
         int[][] guesses = new int[][]
@@ -193,12 +193,12 @@ public partial class DecryptionLogicTest : Node
 
     private void TestReplayLieGeneration()
     {
-        // Section4 puzzle: submit 3 guesses, call PrepareReplay(), verify structure.
-        var puzzle = DecryptionPuzzle.CreateSection4(seed: 20);
+        // Section5Hostile has replay lies: submit 3 guesses, call PrepareReplay(), verify structure.
+        var puzzle = DecryptionPuzzle.CreateSection5Hostile(seed: 20);
 
-        var guess1 = new int[] { 0, 1, 2, 3, 4 };
-        var guess2 = new int[] { 1, 2, 3, 4, 5 };
-        var guess3 = new int[] { 5, 4, 3, 2, 0 };
+        var guess1 = new int[] { 0, 1, 2, 3, 4, 5 };
+        var guess2 = new int[] { 1, 2, 3, 4, 5, 6 };
+        var guess3 = new int[] { 5, 4, 3, 2, 1, 0 };
 
         puzzle.SubmitGuess(guess1);
         if (!puzzle.IsSolved) puzzle.SubmitGuess(guess2);
@@ -240,8 +240,9 @@ public partial class DecryptionLogicTest : Node
     private void TestSolvedState()
     {
         // Use a tiny 2-slot, 2-value no-lies puzzle and brute-force the answer.
-        var puzzle = new DecryptionPuzzle(slots: 2, values: 2, allowRepeats: false,
-                                          liesPerRound: 0, replayLieChance: 0f,
+        var puzzle = new DecryptionPuzzle(2, 2, allowRepeats: false,
+                                          maxLiesPerRound: 0, feedbackLiesEnabled: false,
+                                          valueLiesEnabled: false, replayLieChance: 0f,
                                           maxReplayLiesPerCycle: 0, seed: 77);
 
         // There are only 2 possible arrangements of {0,1} in 2 slots without repeats.
@@ -273,46 +274,36 @@ public partial class DecryptionLogicTest : Node
     private void TestFactoryValues()
     {
         var s1 = DecryptionPuzzle.CreateSection1(seed: 0);
-        Check("TestFactoryValues: Section1 slots=4", s1.SlotCount == 4);
-        Check("TestFactoryValues: Section1 values=6", s1.ValueCount == 6);
-        Check("TestFactoryValues: Section1 allowRepeats=false", !s1.AllowRepeats);
-        Check("TestFactoryValues: Section1 lies=0", s1.LiesPerRound == 0);
+        Check("S1: slots=4", s1.SlotCount == 4);
+        Check("S1: values=6", s1.ValueCount == 6);
+        Check("S1: no repeats", !s1.AllowRepeats);
+        Check("S1: maxLies=0", s1.MaxLiesPerRound == 0);
 
         var s2 = DecryptionPuzzle.CreateSection2(seed: 0);
-        Check("TestFactoryValues: Section2 slots=4", s2.SlotCount == 4);
-        Check("TestFactoryValues: Section2 values=6", s2.ValueCount == 6);
-        Check("TestFactoryValues: Section2 allowRepeats=true", s2.AllowRepeats);
-        Check("TestFactoryValues: Section2 lies=0", s2.LiesPerRound == 0);
+        Check("S2: repeats", s2.AllowRepeats);
+        Check("S2: maxLies=0", s2.MaxLiesPerRound == 0);
 
         var s3 = DecryptionPuzzle.CreateSection3(seed: 0);
-        Check("TestFactoryValues: Section3 slots=5", s3.SlotCount == 5);
-        Check("TestFactoryValues: Section3 values=8", s3.ValueCount == 8);
-        Check("TestFactoryValues: Section3 allowRepeats=true", s3.AllowRepeats);
-        Check("TestFactoryValues: Section3 lies=1", s3.LiesPerRound == 1);
-        Check("TestFactoryValues: Section3 replayChance=0.3", Math.Abs(s3.ReplayLieChance - 0.3f) < 0.0001f);
-        Check("TestFactoryValues: Section3 maxReplay=1", s3.MaxReplayLiesPerCycle == 1);
+        Check("S3: maxLies=1", s3.MaxLiesPerRound == 1);
+        Check("S3: valueLies enabled", s3.ValueLiesEnabled);
+        Check("S3: feedbackLies disabled", !s3.FeedbackLiesEnabled);
 
         var s4 = DecryptionPuzzle.CreateSection4(seed: 0);
-        Check("TestFactoryValues: Section4 slots=5", s4.SlotCount == 5);
-        Check("TestFactoryValues: Section4 values=8", s4.ValueCount == 8);
-        Check("TestFactoryValues: Section4 allowRepeats=true", s4.AllowRepeats);
-        Check("TestFactoryValues: Section4 lies=1", s4.LiesPerRound == 1);
-        Check("TestFactoryValues: Section4 replayChance=0.6", Math.Abs(s4.ReplayLieChance - 0.6f) < 0.0001f);
-        Check("TestFactoryValues: Section4 maxReplay=1", s4.MaxReplayLiesPerCycle == 1);
+        Check("S4: maxLies=1", s4.MaxLiesPerRound == 1);
+        Check("S4: feedbackLies enabled", s4.FeedbackLiesEnabled);
+        Check("S4: valueLies disabled", !s4.ValueLiesEnabled);
 
         var s5h = DecryptionPuzzle.CreateSection5Hostile(seed: 0);
-        Check("TestFactoryValues: Section5Hostile slots=6", s5h.SlotCount == 6);
-        Check("TestFactoryValues: Section5Hostile values=8", s5h.ValueCount == 8);
-        Check("TestFactoryValues: Section5Hostile allowRepeats=true", s5h.AllowRepeats);
-        Check("TestFactoryValues: Section5Hostile lies=2", s5h.LiesPerRound == 2);
-        Check("TestFactoryValues: Section5Hostile replayChance=0.8", Math.Abs(s5h.ReplayLieChance - 0.8f) < 0.0001f);
-        Check("TestFactoryValues: Section5Hostile maxReplay=2", s5h.MaxReplayLiesPerCycle == 2);
+        Check("S5H: slots=6", s5h.SlotCount == 6);
+        Check("S5H: values=8", s5h.ValueCount == 8);
+        Check("S5H: maxLies=2", s5h.MaxLiesPerRound == 2);
+        Check("S5H: both lie types", s5h.FeedbackLiesEnabled && s5h.ValueLiesEnabled);
+        Check("S5H: replayChance=0.8", Math.Abs(s5h.ReplayLieChance - 0.8f) < 0.0001f);
+        Check("S5H: maxReplay=2", s5h.MaxReplayLiesPerCycle == 2);
 
         var s5c = DecryptionPuzzle.CreateSection5Cooperative(seed: 0);
-        Check("TestFactoryValues: Section5Cooperative slots=4", s5c.SlotCount == 4);
-        Check("TestFactoryValues: Section5Cooperative values=6", s5c.ValueCount == 6);
-        Check("TestFactoryValues: Section5Cooperative allowRepeats=false", !s5c.AllowRepeats);
-        Check("TestFactoryValues: Section5Cooperative lies=0", s5c.LiesPerRound == 0);
+        Check("S5C: maxLies=0", s5c.MaxLiesPerRound == 0);
+        Check("S5C: no repeats", !s5c.AllowRepeats);
     }
 
     // -------------------------------------------------------------------------

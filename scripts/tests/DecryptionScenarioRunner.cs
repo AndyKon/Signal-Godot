@@ -68,7 +68,7 @@ public partial class DecryptionScenarioRunner : Node
         var sb = new StringBuilder();
         sb.AppendLine($"┌─ {sectionName} (seed={seed}) ──────────────────────");
         sb.AppendLine($"│ {puzzle.SlotCount} slots, {puzzle.ValueCount} vals, " +
-                      $"repeats={puzzle.AllowRepeats}, lies={puzzle.LiesPerRound}/rnd, " +
+                      $"repeats={puzzle.AllowRepeats}, lies={puzzle.MaxLiesPerRound}/rnd, " +
                       $"replayChance={puzzle.ReplayLieChance:F1}");
         sb.AppendLine("│");
 
@@ -139,7 +139,7 @@ public partial class DecryptionScenarioRunner : Node
 
             // Update knowledge from DISPLAYED feedback (player can't see truth)
             // Only trust feedback in no-lie sections
-            if (puzzle.LiesPerRound == 0)
+            if (puzzle.MaxLiesPerRound == 0)
             {
                 UpdateKnowledge(puzzle, result.DisplayFeedback, guess, confirmed, eliminated, presentValues, absentValues);
             }

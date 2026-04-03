@@ -19,16 +19,16 @@ public partial class DecryptionTestHarness : Control
     // ── Debug config ──────────────────────────────────────────────────────────
     private PanelContainer _configPanel;
     private bool _configVisible = true;
-    private SpinBox _spSlots, _spValues, _spFeedbackLies, _spValueLies;
+    private SpinBox _spSlots, _spValues, _spMaxLies;
     private SpinBox _spReplayChance, _spReplayMax;
-    private CheckButton _cbRepeats;
+    private CheckButton _cbRepeats, _cbFeedbackLies, _cbValueLies;
     private Label _configLabel;
 
     // Current config
-    private int _cfgSlots = 4, _cfgValues = 6, _cfgFeedbackLies = 0, _cfgValueLies = 0;
+    private int _cfgSlots = 4, _cfgValues = 6, _cfgMaxLies = 0;
     private int _cfgReplayMax = 0;
     private float _cfgReplayChance = 0f;
-    private bool _cfgRepeats = false;
+    private bool _cfgRepeats = false, _cfgFeedbackLies = false, _cfgValueLies = false;
 
     public override void _Ready()
     {
@@ -111,12 +111,10 @@ public partial class DecryptionTestHarness : Control
         // Spinboxes
         _spSlots = AddSpinRow(vbox, "Slots", 2, 8, _cfgSlots);
         _spValues = AddSpinRow(vbox, "Values", 2, 8, _cfgValues);
-        _cbRepeats = new CheckButton { Text = "Allow Repeats", ButtonPressed = _cfgRepeats };
-        _cbRepeats.AddThemeColorOverride("font_color", new Color(0.7f, 0.7f, 0.8f));
-        _cbRepeats.AddThemeFontSizeOverride("font_size", 13);
-        vbox.AddChild(_cbRepeats);
-        _spFeedbackLies = AddSpinRow(vbox, "Feedback Lies/Round", 0, 4, _cfgFeedbackLies);
-        _spValueLies = AddSpinRow(vbox, "Value Lies/Round", 0, 4, _cfgValueLies);
+        _cbRepeats = AddCheckRow(vbox, "Allow Repeats", _cfgRepeats);
+        _spMaxLies = AddSpinRow(vbox, "Max Lies/Round", 0, 4, _cfgMaxLies);
+        _cbFeedbackLies = AddCheckRow(vbox, "Feedback Lies", _cfgFeedbackLies);
+        _cbValueLies = AddCheckRow(vbox, "Value Swap Lies", _cfgValueLies);
         _spReplayChance = AddSpinRow(vbox, "Replay Chance %", 0, 100, (int)(_cfgReplayChance * 100), 10);
         _spReplayMax = AddSpinRow(vbox, "Replay Max/Cycle", 0, 4, _cfgReplayMax);
 
@@ -189,6 +187,15 @@ public partial class DecryptionTestHarness : Control
         return spin;
     }
 
+    private CheckButton AddCheckRow(VBoxContainer parent, string label, bool value)
+    {
+        var cb = new CheckButton { Text = label, ButtonPressed = value };
+        cb.AddThemeColorOverride("font_color", new Color(0.7f, 0.7f, 0.8f));
+        cb.AddThemeFontSizeOverride("font_size", 13);
+        parent.AddChild(cb);
+        return cb;
+    }
+
     private void AddPresetButton(VBoxContainer parent, string text, int section)
     {
         var btn = new Button { Text = text };
@@ -211,25 +218,26 @@ public partial class DecryptionTestHarness : Control
 
     private void ApplyPreset(int section)
     {
-        // Load preset values into spinboxes
+        // (slots, values, repeats, maxLies, fbEnabled, valEnabled, replayChance, replayMax)
         var p = section switch
         {
-            1 => (4, 6, false, 0, 0, 0f, 0),
-            2 => (4, 6, true,  0, 0, 0f, 0),
-            3 => (4, 6, true,  0, 1, 0f, 0),    // value-swap
-            4 => (4, 6, true,  1, 0, 0f, 0),    // feedback lie
-            5 => (6, 8, true,  1, 1, 0.8f, 2),  // everything
-            6 => (4, 6, false, 0, 0, 0f, 0),    // cooperative
-            _ => (4, 6, false, 0, 0, 0f, 0)
+            1 => (4, 6, false, 0, false, false, 0f, 0),
+            2 => (4, 6, true,  0, false, false, 0f, 0),
+            3 => (4, 6, true,  1, false, true,  0f, 0),   // value-swap only
+            4 => (4, 6, true,  1, true,  false, 0f, 0),   // feedback only
+            5 => (6, 8, true,  2, true,  true,  0.8f, 2), // everything
+            6 => (4, 6, false, 0, false, false, 0f, 0),   // cooperative
+            _ => (4, 6, false, 0, false, false, 0f, 0)
         };
 
         _spSlots.Value = p.Item1;
         _spValues.Value = p.Item2;
         _cbRepeats.ButtonPressed = p.Item3;
-        _spFeedbackLies.Value = p.Item4;
-        _spValueLies.Value = p.Item5;
-        _spReplayChance.Value = (int)(p.Item6 * 100);
-        _spReplayMax.Value = p.Item7;
+        _spMaxLies.Value = p.Item4;
+        _cbFeedbackLies.ButtonPressed = p.Item5;
+        _cbValueLies.ButtonPressed = p.Item6;
+        _spReplayChance.Value = (int)(p.Item7 * 100);
+        _spReplayMax.Value = p.Item8;
 
         OnApply();
     }
@@ -239,8 +247,9 @@ public partial class DecryptionTestHarness : Control
         _cfgSlots = (int)_spSlots.Value;
         _cfgValues = (int)_spValues.Value;
         _cfgRepeats = _cbRepeats.ButtonPressed;
-        _cfgFeedbackLies = (int)_spFeedbackLies.Value;
-        _cfgValueLies = (int)_spValueLies.Value;
+        _cfgMaxLies = (int)_spMaxLies.Value;
+        _cfgFeedbackLies = _cbFeedbackLies.ButtonPressed;
+        _cfgValueLies = _cbValueLies.ButtonPressed;
         _cfgReplayChance = (float)_spReplayChance.Value / 100f;
         _cfgReplayMax = (int)_spReplayMax.Value;
 
@@ -252,23 +261,27 @@ public partial class DecryptionTestHarness : Control
         UpdateConfigLabel();
         StartPuzzle();
 
-        string config = $"{_cfgSlots}s/{_cfgValues}v rep={_cfgRepeats} FL={_cfgFeedbackLies} VL={_cfgValueLies} RC={_cfgReplayChance:F0} RM={_cfgReplayMax}";
+        string config = $"{_cfgSlots}s/{_cfgValues}v rep={_cfgRepeats} lies={_cfgMaxLies} fb={_cfgFeedbackLies} val={_cfgValueLies} RC={_cfgReplayChance:F0} RM={_cfgReplayMax}";
         GameLog.Event("Test", $"Config applied: {config}");
     }
 
     private void UpdateConfigLabel()
     {
+        var types = new System.Collections.Generic.List<string>();
+        if (_cfgFeedbackLies) types.Add("feedback");
+        if (_cfgValueLies) types.Add("value-swap");
+        string lieTypes = types.Count > 0 ? string.Join(" + ", types) : "none";
+
         _configLabel.Text = $"{_cfgSlots} slots, {_cfgValues} values" +
             $"\nRepeats: {(_cfgRepeats ? "yes" : "no")}" +
-            $"\nFeedback lies: {_cfgFeedbackLies}/round" +
-            $"\nValue lies: {_cfgValueLies}/round" +
+            $"\nMax lies/round: {_cfgMaxLies} ({lieTypes})" +
             $"\nReplay: {_cfgReplayChance * 100:F0}% chance, max {_cfgReplayMax}";
     }
 
     private void StartPuzzle()
     {
         _puzzleUI.StartCustomPuzzle(_cfgSlots, _cfgValues, _cfgRepeats,
-            _cfgFeedbackLies, _cfgValueLies, _cfgReplayChance, _cfgReplayMax);
+            _cfgMaxLies, _cfgFeedbackLies, _cfgValueLies, _cfgReplayChance, _cfgReplayMax);
     }
 
     public override void _UnhandledInput(InputEvent @event)

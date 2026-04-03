@@ -31,14 +31,14 @@ public partial class DecryptionPuzzleUI : Control
     private static readonly string[] HexLabels = { "0a", "3f", "b2", "e7", "1c", "d4", "8f", "5b" };
     private static readonly Color[] HexTints =
     {
-        new Color(0.0f,  0.45f, 0.65f), // 0a — cyan
-        new Color(0.0f,  0.55f, 0.4f),  // 3f — teal
-        new Color(0.1f,  0.55f, 0.1f),  // b2 — green
-        new Color(0.55f, 0.55f, 0.0f),  // e7 — olive-yellow
-        new Color(0.65f, 0.35f, 0.0f),  // 1c — orange
-        new Color(0.15f, 0.3f,  0.65f), // d4 — blue
-        new Color(0.4f,  0.2f,  0.6f),  // 8f — purple
-        new Color(0.6f,  0.15f, 0.4f),  // 5b — magenta
+        new Color(0.1f,  0.6f,  0.85f), // 0a — cyan
+        new Color(0.1f,  0.75f, 0.55f), // 3f — teal
+        new Color(0.2f,  0.7f,  0.2f),  // b2 — green
+        new Color(0.75f, 0.7f,  0.1f),  // e7 — yellow
+        new Color(0.85f, 0.5f,  0.1f),  // 1c — orange
+        new Color(0.25f, 0.4f,  0.8f),  // d4 — blue
+        new Color(0.55f, 0.3f,  0.75f), // 8f — purple
+        new Color(0.8f,  0.25f, 0.55f), // 5b — magenta
     };
     // Text on hex tints uses black for legibility
     private static readonly Color ColorHexText = new Color(0.0f, 0.0f, 0.0f);
@@ -184,13 +184,13 @@ public partial class DecryptionPuzzleUI : Control
 
     /// <summary>Start a puzzle with fully custom parameters.</summary>
     public void StartCustomPuzzle(int slots, int values, bool repeats,
-        int feedbackLies, int valueLies, float replayChance, int replayMax,
-        int seed = -1)
+        int maxLies, bool feedbackLies, bool valueLies,
+        float replayChance, int replayMax, int seed = -1)
     {
         if (seed < 0) seed = (int)(Time.GetTicksMsec() % int.MaxValue);
 
-        _puzzle = new DecryptionPuzzle(slots, values, repeats, feedbackLies,
-            replayChance, replayMax, seed, valueLies);
+        _puzzle = new DecryptionPuzzle(slots, values, repeats, maxLies,
+            feedbackLies, valueLies, replayChance, replayMax, seed);
 
         _section = 0; // custom
         _elapsed = 0f;
@@ -265,7 +265,7 @@ public partial class DecryptionPuzzleUI : Control
         _titleLabel = new Label();
         _titleLabel.Text = section > 0
             ? $"> DECRYPTION TERMINAL // SECTION {section}"
-            : $"> DECRYPTION TERMINAL // {_puzzle.SlotCount}s {_puzzle.ValueCount}v FL{_puzzle.LiesPerRound} VL{_puzzle.ValueLiesPerRound} R{_puzzle.ReplayLieChance:F0}";
+            : $"> DECRYPTION TERMINAL // {_puzzle.SlotCount}s {_puzzle.ValueCount}v L{_puzzle.MaxLiesPerRound} fb={_puzzle.FeedbackLiesEnabled} val={_puzzle.ValueLiesEnabled}";
         _titleLabel.AddThemeFontSizeOverride("font_size", 22);
         _titleLabel.AddThemeColorOverride("font_color", ColorTermText);
         titleBar.AddChild(_titleLabel);
