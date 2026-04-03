@@ -79,7 +79,9 @@ public partial class DecryptionPuzzleUI : Control
     private List<ColorRect[]> _historyDotBgs     = new();
 
     // ── Tell timing ─────────────────────────────────────────────────────────
-    private float _tellDelay = 0.8f; // seconds truth is shown before lie burst (configurable)
+    private float _tellDelay = 0.8f;  // seconds truth is shown before lie burst
+    private int _maxVisibleHistory = 0; // 0 = unlimited, >0 = prune oldest rows
+    private int _historyOffset;         // how many rows have been pruned (visual row 0 = history[_historyOffset])
 
     // ── Animation state machine ───────────────────────────────────────────────
     private enum AnimState { Idle, Replaying, ShowingNew, LieBurst }
@@ -176,6 +178,7 @@ public partial class DecryptionPuzzleUI : Control
         _elapsed = 0f;
         _active = true;
         _animState = AnimState.Idle;
+        _historyOffset = 0;
         _historySlotBgs.Clear();
         _historySlotLabels.Clear();
         _historyDotBgs.Clear();
@@ -188,6 +191,9 @@ public partial class DecryptionPuzzleUI : Control
     /// <summary>Start a puzzle with fully custom parameters.</summary>
     /// <summary>Set how long the true value is visible before the glitch overwrite (seconds).</summary>
     public void SetTellDelay(float seconds) => _tellDelay = Mathf.Clamp(seconds, 0.1f, 2.0f);
+
+    /// <summary>Set max visible history rows (0 = unlimited). Oldest rows pruned when exceeded.</summary>
+    public void SetMaxVisibleHistory(int max) => _maxVisibleHistory = max;
 
     public void StartCustomPuzzle(int slots, int values, bool repeats,
         int maxLies, bool feedbackLies, bool valueLies,
@@ -202,6 +208,7 @@ public partial class DecryptionPuzzleUI : Control
         _elapsed = 0f;
         _active = true;
         _animState = AnimState.Idle;
+        _historyOffset = 0;
         _historySlotBgs.Clear();
         _historySlotLabels.Clear();
         _historyDotBgs.Clear();
@@ -547,7 +554,7 @@ public partial class DecryptionPuzzleUI : Control
 
             _replayResults = replayResults;
             _animState     = AnimState.Replaying;
-            _animRow       = 0;
+            _animRow       = _historyOffset; // start at first visible history entry
             _animSlot      = 0;
             _animTimer     = PerSlotDelay;
         }
@@ -637,6 +644,21 @@ public partial class DecryptionPuzzleUI : Control
         _historySlotLabels.Add(slotLabels);
         _historyDotBgs.Add(dotBgs);
 
+        // Prune oldest rows if over limit
+        if (_maxVisibleHistory > 0)
+        {
+            while (_historySlotBgs.Count > _maxVisibleHistory)
+            {
+                var oldRow = _historyVBox.GetChild(0);
+                _historyVBox.RemoveChild(oldRow);
+                oldRow.QueueFree();
+                _historySlotBgs.RemoveAt(0);
+                _historySlotLabels.RemoveAt(0);
+                _historyDotBgs.RemoveAt(0);
+                _historyOffset++;
+            }
+        }
+
         // Auto-scroll to bottom
         CallDeferred(MethodName.ScrollHistoryToBottom);
     }
@@ -672,27 +694,33 @@ public partial class DecryptionPuzzleUI : Control
     // ─────────────────────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Reveal a history slot with its TRUE feedback. Always honest.
-    /// Lies are applied later in the LieBurst phase.
+    /// Reveal a visual row's slot with feedback. visualRow is the index into
+    /// _historySlotBgs (0-based after pruning).
     /// </summary>
-    private void RevealHistorySlot(int rowIndex, int slotIndex, SlotFeedback trueFeedback)
+    private void RevealSlotVisual(int visualRow, int slotIndex, SlotFeedback feedback)
     {
-        if (rowIndex >= _historySlotBgs.Count) return;
-        var slotBg = _historySlotBgs[rowIndex][slotIndex];
-        var dotBg  = _historyDotBgs[rowIndex][slotIndex];
-        var color = FeedbackColor(trueFeedback);
+        if (visualRow < 0 || visualRow >= _historySlotBgs.Count) return;
+        var slotBg = _historySlotBgs[visualRow][slotIndex];
+        var dotBg  = _historyDotBgs[visualRow][slotIndex];
+        var color = FeedbackColor(feedback);
         slotBg.Color = color;
         dotBg.Color  = color;
     }
+
+    /// <summary>Convert a puzzle history index to a visual row index (accounting for pruned rows).</summary>
+    private int HistoryToVisual(int historyIndex) => historyIndex - _historyOffset;
 
     /// <summary>
     /// Fire all lies for a row simultaneously — NEREUS corrupts in one burst.
     /// Both feedback lies and value lies glitch at the same time.
     /// </summary>
-    private void ApplyLieBurst(int rowIndex)
+    /// <summary>Apply all lies for a history row simultaneously. historyIndex is the puzzle history index.</summary>
+    private void ApplyLieBurst(int historyIndex)
     {
-        if (rowIndex >= _puzzle.History.Count) return;
-        var result = _puzzle.History[rowIndex];
+        if (historyIndex >= _puzzle.History.Count) return;
+        var result = _puzzle.History[historyIndex];
+        int visualRow = HistoryToVisual(historyIndex);
+        if (visualRow < 0 || visualRow >= _historySlotBgs.Count) return;
 
         var glitchWhite = new Color(0.9f, 0.95f, 1.0f);
         var glitchDark  = new Color(0.02f, 0.02f, 0.04f);
@@ -703,8 +731,8 @@ public partial class DecryptionPuzzleUI : Control
             bool hasValueLie = result.ValueLiedSlots[i];
             if (!hasFeedbackLie && !hasValueLie) continue;
 
-            var slotBg = _historySlotBgs[rowIndex][i];
-            var dotBg  = _historyDotBgs[rowIndex][i];
+            var slotBg = _historySlotBgs[visualRow][i];
+            var dotBg  = _historyDotBgs[visualRow][i];
             var container = slotBg.GetParent<Control>();
 
             // Feedback lie: glitch border from truth to lie color
@@ -728,9 +756,9 @@ public partial class DecryptionPuzzleUI : Control
             }
 
             // Value lie: glitch hex label from real to fake
-            if (hasValueLie && rowIndex < _historySlotLabels.Count)
+            if (hasValueLie && visualRow < _historySlotLabels.Count)
             {
-                var lbl = _historySlotLabels[rowIndex][i];
+                var lbl = _historySlotLabels[visualRow][i];
                 int fakeValue = result.DisplayGuess[i];
 
                 var valTween = CreateTween();
@@ -784,12 +812,11 @@ public partial class DecryptionPuzzleUI : Control
 
     private void TickReplaying()
     {
-        int historyCount = _puzzle.GuessesMade; // includes the new guess
-        int replayCount  = historyCount - 1;    // rows with replayResults
+        int historyCount = _puzzle.GuessesMade;
+        int replayCount  = historyCount - 1; // all except the new guess
 
         if (_animRow >= replayCount)
         {
-            // All history replayed → move to ShowingNew
             _animState = AnimState.ShowingNew;
             _animRow   = historyCount - 1;
             _animSlot  = 0;
@@ -798,18 +825,25 @@ public partial class DecryptionPuzzleUI : Control
             return;
         }
 
-        // Scroll to keep active row visible
-        if (_animSlot == 0)
-            CallDeferred(nameof(ScrollToRow), _animRow);
+        int visualRow = HistoryToVisual(_animRow);
 
-        // Reveal one slot in the current replay row (always truth during replay)
+        // Skip pruned rows (not visible)
+        if (visualRow < 0)
+        {
+            _animRow++;
+            _animTimer = 0f;
+            return;
+        }
+
+        if (_animSlot == 0)
+            CallDeferred(nameof(ScrollToRow), visualRow);
+
         var replayRow = _replayResults[_animRow];
-        RevealHistorySlot(_animRow, _animSlot, replayRow.DisplayFeedback[_animSlot]);
+        RevealSlotVisual(visualRow, _animSlot, replayRow.DisplayFeedback[_animSlot]);
 
         _animSlot++;
         if (_animSlot >= _puzzle.SlotCount)
         {
-            // Row complete — pause before next row
             _animSlot  = 0;
             _animRow++;
             _animTimer = BetweenRowPause;
@@ -826,7 +860,8 @@ public partial class DecryptionPuzzleUI : Control
         var lastResult  = _puzzle.History[newRowIndex];
 
         // Always reveal TRUE feedback during this phase
-        RevealHistorySlot(newRowIndex, _animSlot, lastResult.TrueFeedback[_animSlot]);
+        int visualRow = HistoryToVisual(newRowIndex);
+        RevealSlotVisual(visualRow, _animSlot, lastResult.TrueFeedback[_animSlot]);
 
         _animSlot++;
         if (_animSlot >= _puzzle.SlotCount)

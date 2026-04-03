@@ -20,7 +20,7 @@ public partial class DecryptionTestHarness : Control
     private PanelContainer _configPanel;
     private bool _configVisible = true;
     private SpinBox _spSlots, _spValues, _spMaxLies;
-    private SpinBox _spReplayChance, _spReplayMax, _spTellDelay;
+    private SpinBox _spReplayChance, _spReplayMax, _spTellDelay, _spHistoryLimit;
     private CheckButton _cbRepeats, _cbFeedbackLies, _cbValueLies;
     private Label _configLabel;
 
@@ -116,6 +116,7 @@ public partial class DecryptionTestHarness : Control
         _cbFeedbackLies = AddCheckRow(vbox, "Feedback Lies", _cfgFeedbackLies);
         _cbValueLies = AddCheckRow(vbox, "Value Swap Lies", _cfgValueLies);
         _spTellDelay = AddSpinRow(vbox, "Tell Delay (ms)", 100, 2000, 800, 100);
+        _spHistoryLimit = AddSpinRow(vbox, "History Limit", 0, 20, 0);
         _spReplayChance = AddSpinRow(vbox, "Replay Chance %", 0, 100, (int)(_cfgReplayChance * 100), 10);
         _spReplayMax = AddSpinRow(vbox, "Replay Max/Cycle", 0, 4, _cfgReplayMax);
 
@@ -264,6 +265,7 @@ public partial class DecryptionTestHarness : Control
         _resultsLabel.Text = "  Completed: 0 | Avg guesses: -- | Avg time: --";
 
         _puzzleUI.SetTellDelay((float)_spTellDelay.Value / 1000f);
+        _puzzleUI.SetMaxVisibleHistory((int)_spHistoryLimit.Value);
 
         UpdateConfigLabel();
         StartPuzzle();
