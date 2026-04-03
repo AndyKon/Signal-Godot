@@ -79,10 +79,10 @@ public partial class DecryptionPuzzleUI : Control
     private List<ColorRect[]> _historyDotBgs     = new();
 
     // ── Tell timing ─────────────────────────────────────────────────────────
-    private float _tellDelay = 0.3f; // seconds truth is shown before glitch (configurable)
+    private float _tellDelay = 0.8f; // seconds truth is shown before lie burst (configurable)
 
     // ── Animation state machine ───────────────────────────────────────────────
-    private enum AnimState { Idle, Replaying, ShowingNew }
+    private enum AnimState { Idle, Replaying, ShowingNew, LieBurst }
     private AnimState _animState = AnimState.Idle;
 
     private ReplayResult[] _replayResults;   // set by PrepareReplay before animation
@@ -524,7 +524,8 @@ public partial class DecryptionPuzzleUI : Control
         if (result == null) return;
 
         // Add new history row (all pending)
-        AddHistoryRow(_puzzle.GuessesMade - 1, result.DisplayGuess);
+        // Use real guess for initial display — value lies glitch in during reveal
+        AddHistoryRow(_puzzle.GuessesMade - 1, result.Guess);
 
         // Reset input
         ResetCurrentInput();
@@ -671,86 +672,87 @@ public partial class DecryptionPuzzleUI : Control
     // ─────────────────────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Reveal a history slot. For honest slots: just set the color.
-    /// For lied slots: show TRUTH first, pause, then glitch-overwrite to the lie.
+    /// Reveal a history slot with its TRUE feedback. Always honest.
+    /// Lies are applied later in the LieBurst phase.
     /// </summary>
-    private void RevealHistorySlot(int rowIndex, int slotIndex, SlotFeedback feedback, bool isTell)
+    private void RevealHistorySlot(int rowIndex, int slotIndex, SlotFeedback trueFeedback)
     {
         if (rowIndex >= _historySlotBgs.Count) return;
-
         var slotBg = _historySlotBgs[rowIndex][slotIndex];
         var dotBg  = _historyDotBgs[rowIndex][slotIndex];
-        var feedColor = FeedbackColor(feedback);
-
-        if (!isTell)
-        {
-            // Honest slot — just show the feedback
-            slotBg.Color = feedColor;
-            dotBg.Color  = feedColor;
-            return;
-        }
-
-        // Lied slot — first show TRUTH, then glitch-overwrite to lie
-        // We need the true feedback. Get it from the result.
-        int histIndex = rowIndex;
-        if (histIndex < _puzzle.History.Count)
-        {
-            var result = _puzzle.History[histIndex];
-            var trueColor = FeedbackColor(result.TrueFeedback[slotIndex]);
-
-            // Step 1: show truth (looks normal at first)
-            slotBg.Color = trueColor;
-            dotBg.Color  = trueColor;
-
-            // Step 2: after pause, glitch-overwrite to lie
-            PlayGlitchOverwrite(slotBg, dotBg, slotBg.GetParent<Control>(), trueColor, feedColor);
-        }
-        else
-        {
-            slotBg.Color = feedColor;
-            dotBg.Color  = feedColor;
-        }
+        var color = FeedbackColor(trueFeedback);
+        slotBg.Color = color;
+        dotBg.Color  = color;
     }
 
     /// <summary>
-    /// Glitch overwrite: truth sits for 0.3s, then rapid flicker + jitter,
-    /// then settles on the lie. Looks like NEREUS forcibly corrupting data.
+    /// Fire all lies for a row simultaneously — NEREUS corrupts in one burst.
+    /// Both feedback lies and value lies glitch at the same time.
     /// </summary>
-    private void PlayGlitchOverwrite(ColorRect slotBg, ColorRect dotBg, Control container,
-                                      Color truthColor, Color lieColor)
+    private void ApplyLieBurst(int rowIndex)
     {
+        if (rowIndex >= _puzzle.History.Count) return;
+        var result = _puzzle.History[rowIndex];
+
         var glitchWhite = new Color(0.9f, 0.95f, 1.0f);
         var glitchDark  = new Color(0.02f, 0.02f, 0.04f);
-        var originalPos = container.Position;
 
-        var tween = CreateTween();
+        for (int i = 0; i < _puzzle.SlotCount; i++)
+        {
+            bool hasFeedbackLie = result.LiedSlots[i];
+            bool hasValueLie = result.ValueLiedSlots[i];
+            if (!hasFeedbackLie && !hasValueLie) continue;
 
-        // Hold truth for a moment — looks normal
-        tween.TweenInterval(_tellDelay);
+            var slotBg = _historySlotBgs[rowIndex][i];
+            var dotBg  = _historyDotBgs[rowIndex][i];
+            var container = slotBg.GetParent<Control>();
 
-        // Glitch burst: rapid flicker between truth, static, lie
-        tween.TweenProperty(slotBg, "color", glitchWhite, 0.02f);
-        tween.TweenProperty(slotBg, "color", glitchDark, 0.02f);
-        tween.TweenProperty(slotBg, "color", truthColor, 0.03f);
-        tween.TweenProperty(slotBg, "color", glitchWhite, 0.02f);
-        tween.TweenProperty(slotBg, "color", lieColor, 0.02f);
-        tween.TweenProperty(slotBg, "color", glitchDark, 0.02f);
-        tween.TweenProperty(slotBg, "color", lieColor, 0.03f);
+            // Feedback lie: glitch border from truth to lie color
+            if (hasFeedbackLie)
+            {
+                var truthColor = FeedbackColor(result.TrueFeedback[i]);
+                var lieColor = FeedbackColor(result.DisplayFeedback[i]);
 
-        // Sync the feedback dot
-        var dotTween = CreateTween();
-        dotTween.TweenInterval(_tellDelay);
-        dotTween.TweenProperty(dotBg, "color", glitchWhite, 0.02f);
-        dotTween.TweenProperty(dotBg, "color", lieColor, 0.06f);
+                var fbTween = CreateTween();
+                fbTween.TweenProperty(slotBg, "color", glitchWhite, 0.02f);
+                fbTween.TweenProperty(slotBg, "color", glitchDark, 0.02f);
+                fbTween.TweenProperty(slotBg, "color", truthColor, 0.03f);
+                fbTween.TweenProperty(slotBg, "color", glitchWhite, 0.02f);
+                fbTween.TweenProperty(slotBg, "color", lieColor, 0.02f);
+                fbTween.TweenProperty(slotBg, "color", glitchDark, 0.02f);
+                fbTween.TweenProperty(slotBg, "color", lieColor, 0.03f);
 
-        // Position jitter (parallel)
-        var shakeTween = CreateTween();
-        shakeTween.TweenInterval(_tellDelay);
-        shakeTween.TweenProperty(container, "position", originalPos + new Vector2(4, -1), 0.02f);
-        shakeTween.TweenProperty(container, "position", originalPos + new Vector2(-3, 2), 0.02f);
-        shakeTween.TweenProperty(container, "position", originalPos + new Vector2(2, -1), 0.02f);
-        shakeTween.TweenProperty(container, "position", originalPos + new Vector2(-2, 1), 0.02f);
-        shakeTween.TweenProperty(container, "position", originalPos, 0.03f);
+                var dotTween = CreateTween();
+                dotTween.TweenProperty(dotBg, "color", glitchWhite, 0.02f);
+                dotTween.TweenProperty(dotBg, "color", lieColor, 0.06f);
+            }
+
+            // Value lie: glitch hex label from real to fake
+            if (hasValueLie && rowIndex < _historySlotLabels.Count)
+            {
+                var lbl = _historySlotLabels[rowIndex][i];
+                int fakeValue = result.DisplayGuess[i];
+
+                var valTween = CreateTween();
+                valTween.TweenCallback(Callable.From(() => lbl.Text = "##"));
+                valTween.TweenInterval(0.04f);
+                valTween.TweenCallback(Callable.From(() => lbl.Text = HexLabels[fakeValue]));
+                // Also glitch the inner tint
+                var inner = container.GetChild<ColorRect>(1);
+                var innerTween = CreateTween();
+                innerTween.TweenProperty(inner, "color", glitchDark, 0.03f);
+                innerTween.TweenProperty(inner, "color", HexTints[fakeValue], 0.04f);
+            }
+
+            // Position jitter on any lied slot
+            var originalPos = container.Position;
+            var shakeTween = CreateTween();
+            shakeTween.TweenProperty(container, "position", originalPos + new Vector2(4, -1), 0.02f);
+            shakeTween.TweenProperty(container, "position", originalPos + new Vector2(-3, 2), 0.02f);
+            shakeTween.TweenProperty(container, "position", originalPos + new Vector2(2, -1), 0.02f);
+            shakeTween.TweenProperty(container, "position", originalPos + new Vector2(-2, 1), 0.02f);
+            shakeTween.TweenProperty(container, "position", originalPos, 0.03f);
+        }
     }
 
     private static Color FeedbackColor(SlotFeedback f) => f switch
@@ -772,10 +774,12 @@ public partial class DecryptionPuzzleUI : Control
         _animTimer -= delta;
         if (_animTimer > 0f) return;
 
-        if (_animState == AnimState.Replaying)
-            TickReplaying();
-        else if (_animState == AnimState.ShowingNew)
-            TickShowingNew();
+        switch (_animState)
+        {
+            case AnimState.Replaying: TickReplaying(); break;
+            case AnimState.ShowingNew: TickShowingNew(); break;
+            case AnimState.LieBurst: TickLieBurst(); break;
+        }
     }
 
     private void TickReplaying()
@@ -798,10 +802,9 @@ public partial class DecryptionPuzzleUI : Control
         if (_animSlot == 0)
             CallDeferred(nameof(ScrollToRow), _animRow);
 
-        // Reveal one slot in the current replay row
+        // Reveal one slot in the current replay row (always truth during replay)
         var replayRow = _replayResults[_animRow];
-        bool isTell   = replayRow.AlteredSlots[_animSlot];
-        RevealHistorySlot(_animRow, _animSlot, replayRow.DisplayFeedback[_animSlot], isTell);
+        RevealHistorySlot(_animRow, _animSlot, replayRow.DisplayFeedback[_animSlot]);
 
         _animSlot++;
         if (_animSlot >= _puzzle.SlotCount)
@@ -822,54 +825,51 @@ public partial class DecryptionPuzzleUI : Control
         int newRowIndex = _puzzle.GuessesMade - 1;
         var lastResult  = _puzzle.History[newRowIndex];
 
-        bool isFeedbackTell = lastResult.LiedSlots[_animSlot];
-        bool isValueTell = lastResult.ValueLiedSlots[_animSlot];
-
-        // For value lies: show real value first, then glitch to swapped value
-        if (isValueTell && newRowIndex < _historySlotLabels.Count)
-        {
-            var lbl = _historySlotLabels[newRowIndex][_animSlot];
-            var slotBg = _historySlotBgs[newRowIndex][_animSlot];
-            int realValue = lastResult.Guess[_animSlot];
-            int fakeValue = lastResult.DisplayGuess[_animSlot];
-
-            // Show real value first
-            lbl.Text = HexLabels[realValue];
-            slotBg.GetParent<Control>().GetChild<ColorRect>(1).Color = HexTints[realValue]; // inner rect
-
-            // After pause, glitch the label and inner color to fake
-            var labelTween = CreateTween();
-            labelTween.TweenInterval(_tellDelay);
-            labelTween.TweenCallback(Callable.From(() => {
-                lbl.Text = "##";
-            }));
-            labelTween.TweenInterval(0.04f);
-            labelTween.TweenCallback(Callable.From(() => {
-                lbl.Text = HexLabels[realValue];
-            }));
-            labelTween.TweenInterval(0.03f);
-            labelTween.TweenCallback(Callable.From(() => {
-                lbl.Text = HexLabels[fakeValue];
-                // Also update inner rect color to match fake value
-                var inner = slotBg.GetParent<Control>().GetChild<ColorRect>(1);
-                inner.Color = HexTints[fakeValue];
-            }));
-        }
-
-        RevealHistorySlot(newRowIndex, _animSlot, lastResult.DisplayFeedback[_animSlot], isFeedbackTell);
+        // Always reveal TRUE feedback during this phase
+        RevealHistorySlot(newRowIndex, _animSlot, lastResult.TrueFeedback[_animSlot]);
 
         _animSlot++;
         if (_animSlot >= _puzzle.SlotCount)
         {
-            // Done revealing new guess
-            _animState = AnimState.Idle;
-            _animTimer = 0f;
-            OnGuessRevealed(lastResult);
+            // All slots revealed with truth — check if lies need to fire
+            bool hasAnyLie = false;
+            for (int i = 0; i < _puzzle.SlotCount; i++)
+            {
+                if (lastResult.LiedSlots[i] || lastResult.ValueLiedSlots[i])
+                { hasAnyLie = true; break; }
+            }
+
+            if (hasAnyLie && !lastResult.IsSolution)
+            {
+                // Pause showing truth, then fire lie burst
+                _animState = AnimState.LieBurst;
+                _animRow = newRowIndex;
+                _animTimer = _tellDelay;
+            }
+            else
+            {
+                _animState = AnimState.Idle;
+                _animTimer = 0f;
+                OnGuessRevealed(lastResult);
+            }
         }
         else
         {
             _animTimer = NewSlotDelay;
         }
+    }
+
+    private void TickLieBurst()
+    {
+        // Fire all lies simultaneously
+        ApplyLieBurst(_animRow);
+
+        // Brief pause for the glitch to play, then finish
+        _animState = AnimState.Idle;
+        _animTimer = 0f;
+        var result = _puzzle.History[_animRow];
+        // Delay the OnGuessRevealed slightly so glitch visuals finish
+        GetTree().CreateTimer(0.2).Timeout += () => OnGuessRevealed(result);
     }
 
     // ─────────────────────────────────────────────────────────────────────────

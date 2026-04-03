@@ -183,6 +183,9 @@ public partial class DecryptionTestHarness : Control
         spin.Step = step;
         spin.CustomMinimumSize = new Vector2(70, 0);
         spin.AddThemeFontSizeOverride("font_size", 13);
+        // Prevent SpinBox from stealing keyboard focus (Tab/Space/Enter)
+        spin.FocusMode = FocusModeEnum.Click;
+        spin.GetLineEdit().FocusMode = FocusModeEnum.Click;
         row.AddChild(spin);
 
         return spin;
@@ -193,6 +196,7 @@ public partial class DecryptionTestHarness : Control
         var cb = new CheckButton { Text = label, ButtonPressed = value };
         cb.AddThemeColorOverride("font_color", new Color(0.7f, 0.7f, 0.8f));
         cb.AddThemeFontSizeOverride("font_size", 13);
+        cb.FocusMode = FocusModeEnum.Click;
         parent.AddChild(cb);
         return cb;
     }
