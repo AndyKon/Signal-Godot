@@ -57,7 +57,7 @@ public partial class DecryptionTestHarness : Control
         var hints = new Label();
         hints.AddThemeFontSizeOverride("font_size", 12);
         hints.AddThemeColorOverride("font_color", new Color(0.3f, 0.3f, 0.4f));
-        hints.Text = "Section: F1=PressureLock F2=CrewQuarters F3=Research(lies) F4=Engineering F5=Command(hostile) F6=Command(coop) | Space=New | Esc=Quit";
+        hints.Text = "F1-F6=Sections | F7=ValLie F8=FbLie F9=Both F10=Both5s F11=Fb+Replay F12=Everything | Space=New | Esc=Quit";
         root.AddChild(hints);
 
         // Check for --section N command line arg
@@ -93,6 +93,11 @@ public partial class DecryptionTestHarness : Control
             case Key.F5: _currentSection = 5; UpdateInfoLabel(); _puzzleUI.StartPuzzle(5); break;
             case Key.F6: _currentSection = 6; UpdateInfoLabel(); _puzzleUI.StartPuzzle(6); break;
             case Key.F7: _currentSection = 7; UpdateInfoLabel(); _puzzleUI.StartPuzzle(7); break;
+            case Key.F8: _currentSection = 8; UpdateInfoLabel(); _puzzleUI.StartPuzzle(8); break;
+            case Key.F9: _currentSection = 9; UpdateInfoLabel(); _puzzleUI.StartPuzzle(9); break;
+            case Key.F10: _currentSection = 10; UpdateInfoLabel(); _puzzleUI.StartPuzzle(10); break;
+            case Key.F11: _currentSection = 11; UpdateInfoLabel(); _puzzleUI.StartPuzzle(11); break;
+            case Key.F12: _currentSection = 12; UpdateInfoLabel(); _puzzleUI.StartPuzzle(12); break;
             case Key.Space: _puzzleUI.StartPuzzle(_currentSection); break;
             case Key.Escape: GetTree().Quit(); break;
             default: return;
@@ -105,15 +110,21 @@ public partial class DecryptionTestHarness : Control
     {
         string[] sections =
         {
-            "", "Sec 1: Pressure Lock (4 slots, 6 vals, no lies)",
-            "Sec 2: Crew Quarters (4 slots, 6 vals, repeats)",
-            "Sec 3: Research Lab (4 slots, 6 vals, 1 feedback lie)",
-            "Sec 4: Engineering (5 slots, 6 vals, 1 feedback lie)",
-            "Sec 5H: Command - Hostile (6 slots, 8 vals, 2 lies, replay)",
-            "Sec 5C: Command - Cooperative (4 slots, 6 vals, no lies)",
-            "Sec 4B: Engineering ALT (4 slots, 6 vals, 1 VALUE lie)"
+            "",
+            "S1: 4s/6v no lies",
+            "S2: 4s/6v repeats",
+            "S3: 4s/6v 1 value-swap",
+            "S4: 4s/6v 1 feedback lie",
+            "S5H: 6s/8v both lies + replay",
+            "S5C: 4s/6v cooperative",
+            "TEST: 4s/6v value-lie only",
+            "TEST: 4s/6v feedback-lie only",
+            "TEST: 4s/6v both lies (1 each)",
+            "TEST: 5s/6v both lies",
+            "TEST: 5s/6v feedback + replay",
+            "TEST: 6s/8v everything"
         };
-        _infoLabel.Text = _currentSection <= 7 ? sections[_currentSection] : "Unknown section";
+        _infoLabel.Text = _currentSection < sections.Length ? sections[_currentSection] : "Unknown";
     }
 
     private void OnPuzzleCompleted(int guessCount, float timeSpent)

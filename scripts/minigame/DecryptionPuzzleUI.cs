@@ -166,7 +166,13 @@ public partial class DecryptionPuzzleUI : Control
             4 => DecryptionPuzzle.CreateSection4(seed),
             5 => DecryptionPuzzle.CreateSection5Hostile(seed),
             6 => DecryptionPuzzle.CreateSection5Cooperative(seed),
-            7 => DecryptionPuzzle.CreateSection4ValueLie(seed),
+            // Test variants
+            7 => DecryptionPuzzle.CreateTestValueLieOnly(seed),
+            8 => DecryptionPuzzle.CreateTestFeedbackLieOnly(seed),
+            9 => DecryptionPuzzle.CreateTestBothLies(seed),
+            10 => DecryptionPuzzle.CreateTestBothLies5(seed),
+            11 => DecryptionPuzzle.CreateTestFeedbackPlusReplay(seed),
+            12 => DecryptionPuzzle.CreateTestEverything(seed),
             _ => DecryptionPuzzle.CreateSection1(seed)
         };
 

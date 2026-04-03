@@ -253,7 +253,7 @@ public class DecryptionPuzzle
         };
     }
 
-    // --- Factory methods ---
+    // --- Factory methods: game progression ---
 
     public static DecryptionPuzzle CreateSection1(int seed) =>
         new(slots: 4, values: 6, allowRepeats: false, liesPerRound: 0,
@@ -264,25 +264,57 @@ public class DecryptionPuzzle
             replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed);
 
     public static DecryptionPuzzle CreateSection3(int seed) =>
+        new(slots: 4, values: 6, allowRepeats: true, liesPerRound: 0,
+            replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed,
+            valueLiesPerRound: 1);
+
+    public static DecryptionPuzzle CreateSection4(int seed) =>
         new(slots: 4, values: 6, allowRepeats: true, liesPerRound: 1,
             replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed);
 
-    public static DecryptionPuzzle CreateSection4(int seed) =>
-        new(slots: 5, values: 6, allowRepeats: true, liesPerRound: 1,
-            replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed);
-
     public static DecryptionPuzzle CreateSection5Hostile(int seed) =>
-        new(slots: 6, values: 8, allowRepeats: true, liesPerRound: 2,
-            replayLieChance: 0.8f, maxReplayLiesPerCycle: 2, seed: seed);
+        new(slots: 6, values: 8, allowRepeats: true, liesPerRound: 1,
+            replayLieChance: 0.8f, maxReplayLiesPerCycle: 2, seed: seed,
+            valueLiesPerRound: 1);
 
     public static DecryptionPuzzle CreateSection5Cooperative(int seed) =>
         new(slots: 4, values: 6, allowRepeats: false, liesPerRound: 0,
             replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed);
 
-    /// <summary>S4 variant B: value-swap lie instead of feedback lie. For A/B testing.</summary>
-    public static DecryptionPuzzle CreateSection4ValueLie(int seed) =>
+    // --- Test variants: accessible via F7-F12 in test harness ---
+
+    /// <summary>4 slots, value lie only (no feedback lie)</summary>
+    public static DecryptionPuzzle CreateTestValueLieOnly(int seed) =>
         new(slots: 4, values: 6, allowRepeats: true, liesPerRound: 0,
             replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed,
+            valueLiesPerRound: 1);
+
+    /// <summary>4 slots, feedback lie only (no value lie)</summary>
+    public static DecryptionPuzzle CreateTestFeedbackLieOnly(int seed) =>
+        new(slots: 4, values: 6, allowRepeats: true, liesPerRound: 1,
+            replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed);
+
+    /// <summary>4 slots, both lie types (1 each)</summary>
+    public static DecryptionPuzzle CreateTestBothLies(int seed) =>
+        new(slots: 4, values: 6, allowRepeats: true, liesPerRound: 1,
+            replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed,
+            valueLiesPerRound: 1);
+
+    /// <summary>5 slots, both lie types</summary>
+    public static DecryptionPuzzle CreateTestBothLies5(int seed) =>
+        new(slots: 5, values: 6, allowRepeats: true, liesPerRound: 1,
+            replayLieChance: 0f, maxReplayLiesPerCycle: 0, seed: seed,
+            valueLiesPerRound: 1);
+
+    /// <summary>5 slots, feedback lie + replay alters</summary>
+    public static DecryptionPuzzle CreateTestFeedbackPlusReplay(int seed) =>
+        new(slots: 5, values: 6, allowRepeats: true, liesPerRound: 1,
+            replayLieChance: 0.5f, maxReplayLiesPerCycle: 1, seed: seed);
+
+    /// <summary>6 slots, 8 vals, everything (S5H preview)</summary>
+    public static DecryptionPuzzle CreateTestEverything(int seed) =>
+        new(slots: 6, values: 8, allowRepeats: true, liesPerRound: 1,
+            replayLieChance: 0.8f, maxReplayLiesPerCycle: 2, seed: seed,
             valueLiesPerRound: 1);
 }
 
