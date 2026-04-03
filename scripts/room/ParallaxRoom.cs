@@ -54,6 +54,7 @@ public partial class ParallaxRoom : Control
         }
 
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+        MouseFilter = MouseFilterEnum.Ignore; // Don't eat clicks — let Area2D hotspots receive them
         _viewportSize = GetViewportRect().Size;
         _canvasSize = new Vector2(
             _viewportSize.X * CanvasWidthRatio,
@@ -175,6 +176,7 @@ public partial class ParallaxRoom : Control
     public override void _Process(double delta)
     {
         UpdatePanning((float)delta);
+        _scanActive = Input.IsKeyPressed(Key.Shift);
         UpdateScan();
     }
 
@@ -209,14 +211,8 @@ public partial class ParallaxRoom : Control
 
     public override void _UnhandledInput(InputEvent @event)
     {
-        if (@event is InputEventKey key)
-        {
-            if (key.Keycode == Key.Shift)
-            {
-                _scanActive = key.Pressed;
-                GetViewport().SetInputAsHandled();
-            }
-        }
+        // Scan handled in _Process via Input polling — modifier keys
+        // don't reliably fire as InputEventKey in _UnhandledInput
     }
 
     private void UpdateScan()
