@@ -41,6 +41,14 @@ case "$MODE" in
         echo ""
         echo "Log saved: $LOGFILE"
         ;;
+    evidence)
+        echo "Launching with pre-loaded evidence — press J to open evidence web"
+        echo "Log: $LOGFILE"
+        echo ""
+        "$GODOT" --path . -- --evidence-test 2>&1 | tee "$LOGFILE"
+        echo ""
+        echo "Log saved: $LOGFILE"
+        ;;
     [1-6])
         echo "Launching DecryptionTest — Section $MODE"
         echo "Controls: F1-F6=section, 1-8=values, Enter=submit, Backspace=undo, Esc=quit"
@@ -51,10 +59,11 @@ case "$MODE" in
         echo "Log saved: $LOGFILE"
         ;;
     *)
-        echo "Usage: ./playtest.sh [1-6|scenarios|autotest]"
+        echo "Usage: ./playtest.sh [1-6|scenarios|autotest|evidence]"
         echo "  1-6        Interactive playtest starting at that section"
         echo "  scenarios  Automated scenario dump (headless)"
         echo "  autotest   Run logic tests (headless)"
+        echo "  evidence   Pre-load 20 evidence entries, press J to view web"
         exit 1
         ;;
 esac

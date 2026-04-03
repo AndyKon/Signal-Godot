@@ -29,6 +29,52 @@ public partial class AutotestBootstrap : Node
                 Core.GameLog.Event("Test", "Decryption scenario runner enabled");
                 return;
             }
+
+            if (arg == "--evidence-test")
+            {
+                // Pre-discover a spread of evidence entries for UI testing
+                CallDeferred(nameof(LoadEvidenceTestData));
+                Core.GameLog.Event("Test", "Evidence test data loading — press J to open web");
+                return;
+            }
         }
+    }
+
+    private void LoadEvidenceTestData()
+    {
+        var mgr = Evidence.EvidenceManager.Instance;
+        if (mgr == null) return;
+
+        // Section 1 — all
+        mgr.Discover("seismic_report");
+        mgr.Discover("exterior_view");
+        mgr.Discover("nereus_boot_message");
+
+        // Section 2 — all
+        mgr.Discover("vasquez_fragments");
+        mgr.Discover("vasquez_sedation");
+        mgr.Discover("concussion_protocol");
+        mgr.Discover("falsified_reports");
+        mgr.Discover("supply_discrepancies");
+        mgr.Discover("sudden_departure");
+
+        // Section 3 — partial
+        mgr.Discover("echo_origin");
+        mgr.Discover("chen_final_messages");
+        mgr.Discover("extraction_values");
+
+        // Section 4 — partial
+        mgr.Discover("okafor_dialogue");
+        mgr.Discover("nereus_decision_log");
+        mgr.Discover("chen_efficiency");
+        mgr.Discover("nereus_false_warnings");
+        mgr.Discover("preemptive_mods");
+
+        // Section 5 — a few
+        mgr.Discover("nereus_corporate");
+        mgr.Discover("lock_sequence");
+        mgr.Discover("deployment_truth");
+
+        Core.GameLog.Event("Test", $"Pre-discovered 20 evidence entries — press J to open web");
     }
 }
