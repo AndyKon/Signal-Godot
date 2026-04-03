@@ -76,6 +76,7 @@ public partial class EvidenceWebUI : CanvasLayer
 
         _root = new Control();
         _root.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+        _root.ProcessMode = ProcessModeEnum.Always;
         _root.Visible = false;
         AddChild(_root);
 
@@ -105,6 +106,9 @@ public partial class EvidenceWebUI : CanvasLayer
         GetTree().Paused = true;
         Rebuild();
         _root.Visible = true;
+        var entries = EvidenceManager.Instance?.GetDiscoveredEntries();
+        var conns = EvidenceManager.Instance?.GetActiveConnections();
+        GameLog.Event("Evidence", $"Web opened: {entries?.Count ?? 0} entries, {conns?.Count ?? 0} connections, {_nodeControls.Count} nodes rendered");
     }
 
     private void Close()
